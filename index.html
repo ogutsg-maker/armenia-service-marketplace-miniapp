@@ -95,6 +95,8 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 <footer id="footer">Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն</footer>
 </main>
 <script>
+const gatewayUrl = "https://ljihvqglrmojhxqlldbr.supabase.co/functions/v1/telegram-gateway";
+const marketplaceUrl = "https://ljihvqglrmojhxqlldbr.supabase.co/functions/v1/marketplace-api";
 const I18N={
 hy:{title:"Ծառայություններ՝ Հայաստանի համար",intro:"Ծառայությունների շուկա՝ անվտանգ գրանցմամբ և թափանցիկ պայմաններով։",auth:"Telegram-ի նույնականացում",profile:"Ձեր հաշիվը",waiting:"Սպասում ենք Telegram Web App-ին…",note:"Անձնական տվյալները կբացվեն միայն Telegram-ի ստորագրված տվյալները ստուգելուց հետո։",lang:"Հավելվածի լեզուն",langNote:"Ընտրությունը կպահպանվի ձեր հաշվում, երբ նույնականացումը հասանելի լինի։",footer:"Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն",ready:"Հաշիվը բեռնված է",missing:"Բացեք հավելվածը Telegram-ից՝ նույնականացման համար։",failed:"Հաշվի տվյալները դեռ հասանելի չեն։",saved:"Լեզուն պահպանված է։",saveFailed:"Չհաջողվեց պահպանել լեզուն։",status:"Հաշվի կարգավիճակ"},
 ru:{title:"Услуги для Армении",intro:"Маркетплейс услуг с проверкой входа и прозрачными условиями.",auth:"Проверка Telegram",profile:"Ваш аккаунт",waiting:"Ожидаем Telegram Web App…",note:"Данные профиля откроются только после проверки подписанных Telegram-данных.",lang:"Язык приложения",langNote:"Выбор сохранится в аккаунте после успешной авторизации.",footer:"Предварительная версия · заказы и платежи пока не подключены",ready:"Профиль загружен",missing:"Откройте приложение через Telegram для входа.",failed:"Данные профиля пока недоступны.",saved:"Язык сохранён.",saveFailed:"Не удалось сохранить язык.",status:"Статус аккаунта"},
