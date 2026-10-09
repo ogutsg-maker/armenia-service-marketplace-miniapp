@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101820">
+<title>Armenia Service Marketplace</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#101820;--panel:#182630;--line:#2b3c47;--text:#f2f6f8;--muted:#a7b7c1;--accent:#e8bd70;--danger:#ffb4a9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:560px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:800}
+.languages{display:flex;gap:4px;background:var(--panel);padding:4px;border:1px solid var(--line);border-radius:12px}
+.languages button{border:0;background:transparent;color:var(--muted);padding:7px 9px;border-radius:8px;font-weight:700}.languages button.active{background:var(--accent);color:#17212a}
+h1{font-size:30px;line-height:1.15;margin:32px 0 10px;letter-spacing:-.03em}.intro{color:var(--muted);margin:0 0 22px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.value{font-size:18px;font-weight:650;margin-top:5px;overflow-wrap:anywhere}
+.notice{color:var(--muted);font-size:13px;margin-top:12px}
+.status{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-size:13px;font-weight:700}
+.status:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+button,select{font:inherit}select{width:100%;margin-top:10px;background:#0e171d;color:var(--text);border:1px solid var(--line);padding:13px;border-radius:12px}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+input,textarea{width:100%;margin-top:10px;background:#0e171d;color:var(--text);border:1px solid var(--line);padding:13px;border-radius:12px;font:inherit}textarea{min-height:100px;resize:vertical}.action{width:100%;margin-top:12px;border:0;border-radius:12px;padding:13px;background:var(--accent);color:#17212a;font-weight:800}.service{padding:12px 0;border-bottom:1px solid var(--line)}.service:last-child{border-bottom:0}.service-name{font-weight:750}.service-meta{font-size:13px;color:var(--muted);margin-top:4px}
+.hidden{display:none!important}#message{color:var(--danger);font-size:14px;white-space:pre-wrap;margin-top:12px}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
+</style></head>
+<body><main>
+<header><div class="brand">ARMENIA · SERVICE MARKETPLACE</div><nav class="languages" aria-label="Language"><button data-lang="hy" class="active">Հայ</button><button data-lang="ru">RU</button><button data-lang="en">EN</button></nav></header>
+<h1 id="title">Ծառայություններ՝ Հայաստանի համար</h1>
+<p class="intro" id="intro">Ծառայությունների շուկա՝ անվտանգ գրանցմամբ և թափանցիկ պայմաններով։</p>
+<section class="panel">
+<div class="status" id="authStatus">Telegram-ի նույնականացում</div>
+<div class="label" id="profileLabel" style="margin-top:18px">Ձեր հաշիվը</div>
+<div class="value" id="profileName">Սպասում ենք Telegram Web App-ին…</div>
+<div class="notice" id="profileNote">Անձնական տվյալները կբացվեն միայն Telegram-ի ստորագրված տվյալները ստուգելուց հետո։</div>
+<div id="message" role="status" aria-live="polite"></div>
+</section>
+<section class="panel">
+<div class="label" id="languageLabel">Հավելվածի լեզուն</div>
+<select id="languageSelect" aria-label="Application language"><option value="hy">Հայերեն</option><option value="ru">Русский</option><option value="en">English</option></select>
+<div class="notice" id="languageNote">Ընտրությունը կպահպանվի ձեր հաշվում, երբ նույնականացումը հասանելի լինի։</div>
+</section>
+
+<section class="panel">
+<div class="label">Փնտրել ծառայություն / Поиск услуг / Find a service</div>
+<input id="serviceQuery" maxlength="100" placeholder="Ծառայության անունը / Название услуги / Service name">
+<input id="cityQuery" maxlength="100" placeholder="Քաղաք / մարզ · Город / регион · City / region">
+<button class="action" id="searchButton" type="button">Փնտրել / Найти / Search</button>
+<div id="servicesList" class="notice" aria-live="polite">Каталог загрузится после авторизации.</div>
+</section>
+
+<section class="panel">
+<div class="label">Գրանցվել որպես գործընկեր / Регистрация партнёра / Partner registration</div>
+<input id="partnerFirstName" maxlength="120" placeholder="Անուն / Имя / First name">
+<input id="partnerLastName" maxlength="120" placeholder="Ազգանուն / Фамилия / Last name">
+<input id="partnerPhone" maxlength="20" placeholder="+374… · подтверждённый телефон">
+<button class="action" id="verifyPhoneButton" type="button">Подтвердить телефон через Telegram / Verify phone</button>
+<div id="phoneVerifyMessage" class="notice" role="status" aria-live="polite"></div>
+<input id="partnerEmail" maxlength="254" type="email" placeholder="Email (необязательно)">
+<input id="partnerBirthDate" type="date" aria-label="Дата рождения / Birth date">
+<label style="display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:14px"><input id="partnerAdult" type="checkbox" style="width:auto;margin:3px 0 0"> <span>Հաստատում եմ, որ 18 տարեկան եմ / Подтверждаю, что мне есть 18 лет / I confirm I am 18+</span></label>
+<input id="partnerDisplayName" maxlength="200" placeholder="Բիզնեսի անուն / Название бизнеса / Business name">
+<select id="partnerCompanyType"><option value="individual">Անհատ / Физлицо / Individual</option><option value="legal_entity">Իրավաբանական անձ / Юрлицо / Legal entity</option></select>
+<input id="partnerLegalName" maxlength="200" placeholder="Իրավական անուն / Юридическое название / Legal name">
+<input id="partnerCompanyPhone" maxlength="20" placeholder="Հեռախոս / Телефон бизнеса / Business phone">
+<textarea id="partnerDescription" maxlength="3000" placeholder="Նկարագրություն / Описание / Description"></textarea>
+<input id="partnerMarz" maxlength="100" placeholder="Մարզ / Регион / Marz">
+<input id="partnerCity" maxlength="100" placeholder="Քաղաք / Город / City">
+<input id="partnerVillage" maxlength="100" placeholder="Գյուղ (если есть) / Village (optional)">
+<input id="partnerDistrict" maxlength="100" placeholder="Թաղամաս / Район / District">
+<input id="partnerAddress" maxlength="300" placeholder="Հասցե / Адрес / Address">
+<button class="action" id="partnerSubmitButton" type="button">Ուղարկել հայտը / Отправить заявку / Submit</button>
+<div id="partnerMessage" class="notice" role="status" aria-live="polite"></div>
+<div class="notice">Загрузите документы PDF/JPG/PNG до 3 МБ каждый. Компания не публикуется до проверки.</div>
+<div class="label" style="margin-top:12px">Документ личности / Identity document</div>
+<select id="partnerIdentityType"><option value="identity">ID / Identity card</option><option value="passport">Паспорт / Passport</option></select>
+<input id="partnerIdentityFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+<button class="action" id="partnerIdentityUpload" type="button">Загрузить документ личности / Upload identity</button>
+<div class="label" style="margin-top:12px">Регистрационный документ компании (для юрлица)</div>
+<input id="partnerCompanyDoc" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+<button class="action" id="partnerCompanyUpload" type="button">Загрузить документ компании / Upload company document</button>
+<div id="partnerUploadMessage" class="notice" role="status" aria-live="polite"></div>
+</section>
+<section class="panel">
+<div class="label">Նոր հարցում / Новая заявка / New request</div>
+<textarea id="requestDescription" maxlength="5000" placeholder="Նկարագրեք ծառայությունը / Опишите услугу / Describe the service"></textarea>
+<input id="requestServiceName" maxlength="200" placeholder="Ծառայության անունը / Название услуги / Service name">
+<select id="requestMode"><option value="">Եղանակ / Формат / Mode</option><option value="on_site">Տեղում / На месте / On-site</option><option value="remote_visit">Այց / Выезд / Visit</option><option value="online">Առցանց / Онлайн / Online</option></select>
+<input id="requestCity" maxlength="100" placeholder="Քաղաք / Город / City">
+<input id="requestMarz" maxlength="100" placeholder="Մարզ / Регион / Marz">
+<button class="action" id="requestButton" type="button">Ուղարկել / Отправить / Submit</button>
+<div id="requestMessage" class="notice" role="status" aria-live="polite"></div>
+</section>
+<footer id="footer">Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն</footer>
+</main>
+<script>
+const I18N={
+hy:{title:"Ծառայություններ՝ Հայաստանի համար",intro:"Ծառայությունների շուկա՝ անվտանգ գրանցմամբ և թափանցիկ պայմաններով։",auth:"Telegram-ի նույնականացում",profile:"Ձեր հաշիվը",waiting:"Սպասում ենք Telegram Web App-ին…",note:"Անձնական տվյալները կբացվեն միայն Telegram-ի ստորագրված տվյալները ստուգելուց հետո։",lang:"Հավելվածի լեզուն",langNote:"Ընտրությունը կպահպանվի ձեր հաշվում, երբ նույնականացումը հասանելի լինի։",footer:"Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն",ready:"Հաշիվը բեռնված է",missing:"Բացեք հավելվածը Telegram-ից՝ նույնականացման համար։",failed:"Հաշվի տվյալները դեռ հասանելի չեն։",saved:"Լեզուն պահպանված է։",saveFailed:"Չհաջողվեց պահպանել լեզուն։",status:"Հաշվի կարգավիճակ"},
+ru:{title:"Услуги для Армении",intro:"Маркетплейс услуг с проверкой входа и прозрачными условиями.",auth:"Проверка Telegram",profile:"Ваш аккаунт",waiting:"Ожидаем Telegram Web App…",note:"Данные профиля откроются только после проверки подписанных Telegram-данных.",lang:"Язык приложения",langNote:"Выбор сохранится в аккаунте после успешной авторизации.",footer:"Предварительная версия · заказы и платежи пока не подключены",ready:"Профиль загружен",missing:"Откройте приложение через Telegram для входа.",failed:"Данные профиля пока недоступны.",saved:"Язык сохранён.",saveFailed:"Не удалось сохранить язык.",status:"Статус аккаунта"},
+en:{title:"Services for Armenia",intro:"A service marketplace with verified sign-in and transparent terms.",auth:"Telegram authentication",profile:"Your account",waiting:"Waiting for Telegram Web App…",note:"Your profile is shown only after Telegram's signed data is verified.",lang:"App language",langNote:"Your choice will be saved to your account after authentication.",footer:"Early preview · bookings and payments are not connected yet",ready:"Profile loaded",missing:"Open this app from Telegram to sign in.",failed:"Profile data is not available yet.",saved:"Language saved.",saveFailed:"Could not save language.",status:"Account status"}
+};
+let lang="hy";let initData="";
+const $=id=>document.getElementById(id);
+function paint(){const t=I18N[lang];document.documentElement.lang=lang;for(const k of ["title","intro","auth","profile","waiting","note","lang","langNote","footer"]){}$("title").textContent=t.title;$("intro").textContent=t.intro;$("authStatus").textContent=t.auth;$("profileLabel").textContent=t.profile;$("profileName").textContent=t.waiting;$("profileNote").textContent=t.note;$("languageLabel").textContent=t.lang;$("languageNote").textContent=t.langNote;$("footer").textContent=t.footer;document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));}
+async function api(path,options={}){return fetch(gatewayUrl+path,{...options,headers:{"X-Telegram-Init-Data":initData,"Content-Type":"application/json",...(options.headers||{})}});}
+
+async function market(path,options={}){const isForm=options.body instanceof FormData;return fetch(marketplaceUrl+path,{...options,headers:{"X-Telegram-Init-Data":initData,...(isForm?{}:{"Content-Type":"application/json"}),...(options.headers||{})}});}
+function showMoney(v,c){return new Intl.NumberFormat(lang==="ru"?"ru-RU":lang==="en"?"en-US":"hy-AM").format(Number(v))+" "+(c||"AMD");}
+async function searchServices(){
+ const box=$("servicesList");
+ if(!initData){box.textContent=I18N[lang].missing;return;}
+ box.textContent="…";
+ const params=new URLSearchParams();const term=$("serviceQuery").value.trim();const location=$("cityQuery").value.trim();
+ if(term)params.set("q",term);if(location){params.set("city",location);params.set("marz",location);}
+ try{
+  const r=await market("/services?"+params.toString());const d=await r.json();if(!r.ok)throw new Error("search_failed");
+  const items=d.services||[];box.innerHTML="";
+  if(!items.length){box.textContent=lang==="ru"?"Подходящие услуги не найдены.":lang==="en"?"No matching services found.":"Համապատասխան ծառայություններ չգտնվեցին։";return;}
+  for(const s of items){const item=document.createElement("div");item.className="service";const name=document.createElement("div");name.className="service-name";name.textContent=s.name;const meta=document.createElement("div");meta.className="service-meta";const c=s.companies||{};meta.textContent=[showMoney(s.price_amount,s.currency),s.price_type==="starting_from"?"· from":"",s.service_mode,c.city,c.marz].filter(Boolean).join(" · ");const desc=document.createElement("div");desc.className="service-meta";desc.textContent=s.description||"";item.append(name,meta,desc);box.appendChild(item);}
+ }catch{box.textContent=I18N[lang].failed;}
+}
+
+
+
+async function requestPhoneVerification(){
+ const box=$("phoneVerifyMessage");box.textContent="…";
+ try{const r=await market("/request-phone-verification",{method:"POST",body:"{}"});const d=await r.json();if(!r.ok)throw new Error(d.error||"request_failed");
+ box.textContent=lang==="ru"?"Откройте чат с ботом и отправьте свой контакт через кнопку «Подтвердить мой телефон».":lang==="en"?"Open the bot chat and share your own contact using the verification button.":"Բացեք բոտի զրույցը և հաստատեք ձեր համարը՝ ուղարկելով ձեր կոնտակտը։";
+ }catch(e){box.textContent=e.message==="could_not_message_user_start_bot_first"?"Сначала откройте Telegram-бота и нажмите Start.":lang==="ru"?"Не удалось отправить запрос подтверждения.":lang==="en"?"Could not start phone verification.":"Չհաջողվեց սկսել հեռախոսի հաստատումը։";}
+}
+$("verifyPhoneButton").addEventListener("click",requestPhoneVerification);
+async function uploadPartnerDocument(inputId,type){
+ const box=$("partnerUploadMessage"),input=$(inputId),file=input.files&&input.files[0];
+ if(!file){box.textContent="Choose a PDF, JPG, or PNG file first.";return;}
+ if(file.size>3*1024*1024){box.textContent="Maximum file size is 3 MB.";return;}
+ const form=new FormData();form.append("file",file);form.append("document_type",type);
+ box.textContent="Uploading…";
+ try{const r=await market("/partner-documents",{method:"POST",body:form});const d=await r.json();if(!r.ok)throw new Error(d.error||"upload_failed");box.textContent=lang==="ru"?"Документ загружен приватно и ожидает проверки.":lang==="en"?"Document uploaded privately and is awaiting review.":"Փաստաթուղթը վերբեռնվեց մասնավոր կերպով և սպասում է ստուգման։";input.value="";}
+ catch(e){const map={partner_application_required:"Сначала отправьте заявку компании.",verified_profile_required:"Сначала подтвердите телефон и возраст.",file_size_limit_3mb:"Максимальный размер файла — 3 МБ."};box.textContent=map[e.message]||"Upload failed. Please try again.";}
+}
+$("partnerIdentityUpload").addEventListener("click",()=>uploadPartnerDocument("partnerIdentityFile",$("partnerIdentityType").value));
+$("partnerCompanyUpload").addEventListener("click",()=>uploadPartnerDocument("partnerCompanyDoc","company_register"));
+async function submitPartnerApplication(){
+ const box=$("partnerMessage");if(!initData){box.textContent=I18N[lang].missing;return;}
+ const required=["partnerFirstName","partnerDisplayName","partnerLegalName","partnerPhone","partnerMarz","partnerAddress"];
+ for(const id of required){if(!$(id).value.trim()){box.textContent="Please complete the required fields.";return;}}
+ if(!$("partnerAdult").checked){box.textContent="Confirm that you are 18 or older.";return;}
+ const body={first_name:$("partnerFirstName").value.trim(),last_name:$("partnerLastName").value.trim(),phone_e164:$("partnerPhone").value.trim(),email:$("partnerEmail").value.trim(),birth_date:$("partnerBirthDate").value,adult_confirmed:$("partnerAdult").checked,display_name:$("partnerDisplayName").value.trim(),legal_name:$("partnerLegalName").value.trim(),company_type:$("partnerCompanyType").value,company_phone_e164:$("partnerCompanyPhone").value.trim(),description:$("partnerDescription").value.trim(),marz:$("partnerMarz").value.trim(),city:$("partnerCity").value.trim(),village:$("partnerVillage").value.trim(),district:$("partnerDistrict").value.trim(),address:$("partnerAddress").value.trim(),preferred_language:lang};
+ box.textContent="…";
+ try{const r=await market("/partner-registration",{method:"POST",body:JSON.stringify(body)});const d=await r.json();if(!r.ok){const map={verified_phone_required:"Сначала подтвердите телефон через Telegram.",submitted_phone_must_match_verified_phone:"Укажите именно подтверждённый телефон.",must_be_18:"Регистрация партнёра доступна с 18 лет.",partner_application_already_exists:"Заявка компании уже существует.",required_fields_missing:"Заполните обязательные поля."};throw new Error(map[d.error]||d.error||"request_failed");}
+ box.textContent=lang==="ru"?"Заявка создана. Загрузите документы после подключения загрузки; компания не будет опубликована до проверки.":lang==="en"?"Application created. Identity/business document upload is still pending; the company will remain unpublished until review.":"Հայտը ստեղծվեց։ Փաստաթղթերի վերբեռնումը դեռ պետք է միացվի․ ընկերությունը չի հրապարակվի մինչև ստուգումը։";
+ }catch(e){box.textContent=e.message||"Request failed.";}
+}
+async function submitRequest(){
+ const box=$("requestMessage");if(!initData){box.textContent=I18N[lang].missing;return;}
+ const description=$("requestDescription").value.trim();if(description.length<3){box.textContent="Please describe the service.";return;}
+ box.textContent="…";
+ const body={description,requested_service_name:$("requestServiceName").value.trim(),requested_mode:$("requestMode").value||null,city:$("requestCity").value.trim(),marz:$("requestMarz").value.trim()};
+ try{const r=await market("/requests",{method:"POST",body:JSON.stringify(body)});const d=await r.json();if(!r.ok){if(d.error==="account_not_active")throw new Error("account_not_active");throw new Error("request_failed");}
+  box.textContent=lang==="ru"?"Заявка сохранена.":lang==="en"?"Request saved.":"Հարցումը պահպանվեց։";$("requestDescription").value="";
+ }catch(e){box.textContent=e.message==="account_not_active"?(lang==="ru"?"Для отправки заявки требуется активация аккаунта.":lang==="en"?"Account activation is required before submitting requests.":"Հարցում ուղարկելու համար անհրաժեշտ է հաշվի ակտիվացում։"):(lang==="ru"?"Не удалось отправить заявку.":lang==="en"?"Could not submit the request.":"Չհաջողվեց ուղարկել հարցումը։");}
+}
+$("searchButton").addEventListener("click",searchServices);$("requestButton").addEventListener("click",submitRequest);$("partnerSubmitButton").addEventListener("click",submitPartnerApplication);
+
+async function loadProfile(){const t=I18N[lang];if(!initData){$("profileName").textContent=t.missing;$("message").textContent="";return;}try{const r=await api("/me");const data=await r.json();if(!r.ok)throw new Error(data.error||"profile_unavailable");const u=data.user;$("authStatus").textContent=t.ready;$("profileName").textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"—";$("profileNote").textContent=t.status+": "+u.status;$("languageSelect").value=u.preferred_language||"hy";$("message").textContent="";}catch(e){$("profileName").textContent=t.failed;$("message").textContent=e.message==="telegram_auth_not_configured"?"Telegram bot token ещё не настроен на сервере.":t.failed;}}
+document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>{lang=b.dataset.lang;paint();loadProfile();}));
+$("languageSelect").addEventListener("change",async e=>{if(!initData)return;try{const r=await api("/language",{method:"POST",body:JSON.stringify({language:e.target.value})});const d=await r.json();if(!r.ok)throw new Error(d.error);$("message").textContent=I18N[lang].saved;}catch{$("message").textContent=I18N[lang].saveFailed;}});
+try{const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand();initData=tg.initData||"";if(tg.initDataUnsafe?.user?.language_code&&["hy","ru","en"].includes(tg.initDataUnsafe.user.language_code))lang=tg.initDataUnsafe.user.language_code;}}catch{}
+paint();loadProfile();
+</script></body></html>
