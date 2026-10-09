@@ -14,6 +14,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px}.b
 .languages button{border:0;background:transparent;color:var(--muted);padding:7px 9px;border-radius:8px;font-weight:700}.languages button.active{background:var(--accent);color:#17212a}
 h1{font-size:30px;line-height:1.15;margin:32px 0 10px;letter-spacing:-.03em}.intro{color:var(--muted);margin:0 0 22px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0}
+.role-choice{display:grid;gap:12px;margin-top:26px}.role-card{display:flex;align-items:center;gap:14px;width:100%;padding:18px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:18px;color:var(--text);cursor:pointer;transition:border-color .15s,transform .15s}.role-card:active{transform:scale(.99)}.role-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.role-card:hover{border-color:var(--accent)}.role-icon{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:14px;background:#293a43;color:var(--accent);font-size:30px}.partner-icon{background:#2c3948;color:#a8c8f0}.role-copy{display:grid;gap:4px;flex:1}.role-copy strong{font-size:17px}.role-copy small{font-size:13px;line-height:1.4;color:var(--muted)}.role-arrow{font-size:28px;color:var(--accent)}.welcome-footnote{margin:22px 8px 6px;text-align:center;font-size:13px;color:var(--muted)}.back-button{border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:18px 0 6px;background:transparent;color:var(--muted);cursor:pointer}.hidden{display:none!important}
 .label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
 .value{font-size:18px;font-weight:650;margin-top:5px;overflow-wrap:anywhere}
 .notice{color:var(--muted);font-size:13px;margin-top:12px}
@@ -27,22 +28,30 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 </style></head>
 <body><main>
 <header><div class="brand">ARMENIA · SERVICE MARKETPLACE</div><nav class="languages" aria-label="Language"><button data-lang="hy" class="active">Հայ</button><button data-lang="ru">RU</button><button data-lang="en">EN</button></nav></header>
-<h1 id="title">Ծառայություններ՝ Հայաստանի համար</h1>
-<p class="intro" id="intro">Ծառայությունների շուկա՝ անվտանգ գրանցմամբ և թափանցիկ պայմաններով։</p>
-<section class="panel">
+<section id="welcomeScreen">
+<h1 id="title">Բարի գալուստ Հայաստան ծառայությունների շուկա</h1>
+<p class="intro" id="intro">Գտեք վստահելի մասնագետներ կամ միացեք որպես գործընկեր և ներկայացրեք ձեր ծառայությունները Հայաստանում։</p>
+<div class="role-choice">
+<button class="role-card" id="clientRoleButton" type="button"><span class="role-icon" aria-hidden="true">⌕</span><span class="role-copy"><strong id="clientRoleTitle">Ես հաճախորդ եմ</strong><small id="clientRoleDescription">Ուզում եմ գտնել ծառայություն կամ մասնագետ</small></span><span class="role-arrow" aria-hidden="true">›</span></button>
+<button class="role-card" id="partnerRoleButton" type="button"><span class="role-icon partner-icon" aria-hidden="true">▣</span><span class="role-copy"><strong id="partnerRoleTitle">Ես գործընկեր եմ</strong><small id="partnerRoleDescription">Ուզում եմ գրանցել բիզնես և առաջարկել ծառայություններ</small></span><span class="role-arrow" aria-hidden="true">›</span></button>
+</div>
+<p class="welcome-footnote" id="welcomeFootnote">Մի հարթակ՝ ծառայություններ գտնելու և ձեր բիզնեսը զարգացնելու համար։</p>
+</section>
+<button id="backButton" class="back-button hidden" type="button">‹ <span id="backLabel">Գլխավոր էջ</span></button>
+<section class="panel hidden" id="profilePanel">
 <div class="status" id="authStatus">Telegram-ի նույնականացում</div>
 <div class="label" id="profileLabel" style="margin-top:18px">Ձեր հաշիվը</div>
 <div class="value" id="profileName">Սպասում ենք Telegram Web App-ին…</div>
 <div class="notice" id="profileNote">Անձնական տվյալները կբացվեն միայն Telegram-ի ստորագրված տվյալները ստուգելուց հետո։</div>
 <div id="message" role="status" aria-live="polite"></div>
 </section>
-<section class="panel">
+<section class="panel hidden" id="languagePanel">
 <div class="label" id="languageLabel">Հավելվածի լեզուն</div>
 <select id="languageSelect" aria-label="Application language"><option value="hy">Հայերեն</option><option value="ru">Русский</option><option value="en">English</option></select>
 <div class="notice" id="languageNote">Ընտրությունը կպահպանվի ձեր հաշվում, երբ նույնականացումը հասանելի լինի։</div>
 </section>
 
-<section class="panel">
+<section class="panel hidden" id="servicePanel">
 <div class="label">Փնտրել ծառայություն / Поиск услуг / Find a service</div>
 <input id="serviceQuery" maxlength="100" placeholder="Ծառայության անունը / Название услуги / Service name">
 <input id="cityQuery" maxlength="100" placeholder="Քաղաք / մարզ · Город / регион · City / region">
@@ -50,7 +59,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 <div id="servicesList" class="notice" aria-live="polite">Каталог загрузится после авторизации.</div>
 </section>
 
-<section class="panel">
+<section class="panel hidden" id="partnerPanel">
 <div class="label">Գրանցվել որպես գործընկեր / Регистрация партнёра / Partner registration</div>
 <input id="partnerFirstName" maxlength="120" placeholder="Անուն / Имя / First name">
 <input id="partnerLastName" maxlength="120" placeholder="Ազգանուն / Фамилия / Last name">
@@ -82,7 +91,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 <button class="action" id="partnerCompanyUpload" type="button">Загрузить документ компании / Upload company document</button>
 <div id="partnerUploadMessage" class="notice" role="status" aria-live="polite"></div>
 </section>
-<section class="panel">
+<section class="panel hidden" id="requestPanel">
 <div class="label">Նոր հարցում / Новая заявка / New request</div>
 <textarea id="requestDescription" maxlength="5000" placeholder="Նկարագրեք ծառայությունը / Опишите услугу / Describe the service"></textarea>
 <input id="requestServiceName" maxlength="200" placeholder="Ծառայության անունը / Название услуги / Service name">
@@ -92,19 +101,19 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 <button class="action" id="requestButton" type="button">Ուղարկել / Отправить / Submit</button>
 <div id="requestMessage" class="notice" role="status" aria-live="polite"></div>
 </section>
-<footer id="footer">Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն</footer>
+<footer id="footer" class="hidden">Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն</footer>
 </main>
 <script>
 const gatewayUrl = "https://ljihvqglrmojhxqlldbr.supabase.co/functions/v1/telegram-gateway";
 const marketplaceUrl = "https://ljihvqglrmojhxqlldbr.supabase.co/functions/v1/marketplace-api";
 const I18N={
-hy:{title:"Ծառայություններ՝ Հայաստանի համար",intro:"Ծառայությունների շուկա՝ անվտանգ գրանցմամբ և թափանցիկ պայմաններով։",auth:"Telegram-ի նույնականացում",profile:"Ձեր հաշիվը",waiting:"Սպասում ենք Telegram Web App-ին…",note:"Անձնական տվյալները կբացվեն միայն Telegram-ի ստորագրված տվյալները ստուգելուց հետո։",lang:"Հավելվածի լեզուն",langNote:"Ընտրությունը կպահպանվի ձեր հաշվում, երբ նույնականացումը հասանելի լինի։",footer:"Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն",ready:"Հաշիվը բեռնված է",missing:"Բացեք հավելվածը Telegram-ից՝ նույնականացման համար։",failed:"Հաշվի տվյալները դեռ հասանելի չեն։",saved:"Լեզուն պահպանված է։",saveFailed:"Չհաջողվեց պահպանել լեզուն։",status:"Հաշվի կարգավիճակ"},
-ru:{title:"Услуги для Армении",intro:"Маркетплейс услуг с проверкой входа и прозрачными условиями.",auth:"Проверка Telegram",profile:"Ваш аккаунт",waiting:"Ожидаем Telegram Web App…",note:"Данные профиля откроются только после проверки подписанных Telegram-данных.",lang:"Язык приложения",langNote:"Выбор сохранится в аккаунте после успешной авторизации.",footer:"Предварительная версия · заказы и платежи пока не подключены",ready:"Профиль загружен",missing:"Откройте приложение через Telegram для входа.",failed:"Данные профиля пока недоступны.",saved:"Язык сохранён.",saveFailed:"Не удалось сохранить язык.",status:"Статус аккаунта"},
-en:{title:"Services for Armenia",intro:"A service marketplace with verified sign-in and transparent terms.",auth:"Telegram authentication",profile:"Your account",waiting:"Waiting for Telegram Web App…",note:"Your profile is shown only after Telegram's signed data is verified.",lang:"App language",langNote:"Your choice will be saved to your account after authentication.",footer:"Early preview · bookings and payments are not connected yet",ready:"Profile loaded",missing:"Open this app from Telegram to sign in.",failed:"Profile data is not available yet.",saved:"Language saved.",saveFailed:"Could not save language.",status:"Account status"}
+hy:{title:"Բարի գալուստ Հայաստան ծառայությունների շուկա",intro:"Գտեք վստահելի մասնագետներ կամ միացեք որպես գործընկեր և ներկայացրեք ձեր ծառայությունները Հայաստանում։",clientTitle:"Ես հաճախորդ եմ",clientDescription:"Ուզում եմ գտնել ծառայություն կամ մասնագետ",partnerTitle:"Ես գործընկեր եմ",partnerDescription:"Ուզում եմ գրանցել բիզնես և առաջարկել ծառայություններ",welcomeFootnote:"Մի հարթակ՝ ծառայություններ գտնելու և ձեր բիզնեսը զարգացնելու համար։",back:"Գլխավոր էջ",auth:"Telegram-ի նույնականացում",profile:"Ձեր հաշիվը",waiting:"Սպասում ենք Telegram Web App-ին…",note:"Անձնական տվյալները կբացվեն միայն Telegram-ի ստորագրված տվյալները ստուգելուց հետո։",lang:"Հավելվածի լեզուն",langNote:"Ընտրությունը կպահպանվի ձեր հաշվում, երբ նույնականացումը հասանելի լինի։",footer:"Նախնական տարբերակ · վճարումներ և պատվերներ դեռ միացված չեն",ready:"Հաշիվը բեռնված է",missing:"Բացեք հավելվածը Telegram-ից՝ նույնականացման համար։",failed:"Հաշվի տվյալները դեռ հասանելի չեն։",saved:"Լեզուն պահպանված է։",saveFailed:"Չհաջողվեց պահպանել լեզուն։",status:"Հաշվի կարգավիճակ"},
+ru:{title:"Добро пожаловать на маркетплейс услуг Армении",intro:"Находите проверенных специалистов или присоединяйтесь как партнёр и предлагайте свои услуги по всей Армении.",clientTitle:"Я клиент",clientDescription:"Хочу найти услугу или специалиста",partnerTitle:"Я партнёр",partnerDescription:"Хочу зарегистрировать бизнес и предлагать услуги",welcomeFootnote:"Одна платформа, чтобы находить услуги и развивать свой бизнес.",back:"На главную",auth:"Проверка Telegram",profile:"Ваш аккаунт",waiting:"Ожидаем Telegram Web App…",note:"Данные профиля откроются только после проверки подписанных Telegram-данных.",lang:"Язык приложения",langNote:"Выбор сохранится в аккаунте после успешной авторизации.",footer:"Предварительная версия · заказы и платежи пока не подключены",ready:"Профиль загружен",missing:"Откройте приложение через Telegram для входа.",failed:"Данные профиля пока недоступны.",saved:"Язык сохранён.",saveFailed:"Не удалось сохранить язык.",status:"Статус аккаунта"},
+en:{title:"Welcome to Armenia’s service marketplace",intro:"Find trusted professionals or join as a partner and offer your services across Armenia.",clientTitle:"I’m a customer",clientDescription:"I want to find a service or professional",partnerTitle:"I’m a partner",partnerDescription:"I want to register a business and offer services",welcomeFootnote:"One place to find services and grow your business.",back:"Home",auth:"Telegram authentication",profile:"Your account",waiting:"Waiting for Telegram Web App…",note:"Your profile is shown only after Telegram's signed data is verified.",lang:"App language",langNote:"Your choice will be saved to your account after authentication.",footer:"Early preview · bookings and payments are not connected yet",ready:"Profile loaded",missing:"Open this app from Telegram to sign in.",failed:"Profile data is not available yet.",saved:"Language saved.",saveFailed:"Could not save language.",status:"Account status"}
 };
 let lang="hy";let initData="";
 const $=id=>document.getElementById(id);
-function paint(){const t=I18N[lang];document.documentElement.lang=lang;for(const k of ["title","intro","auth","profile","waiting","note","lang","langNote","footer"]){}$("title").textContent=t.title;$("intro").textContent=t.intro;$("authStatus").textContent=t.auth;$("profileLabel").textContent=t.profile;$("profileName").textContent=t.waiting;$("profileNote").textContent=t.note;$("languageLabel").textContent=t.lang;$("languageNote").textContent=t.langNote;$("footer").textContent=t.footer;document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));}
+function paint(){const t=I18N[lang];document.documentElement.lang=lang;$("title").textContent=t.title;$("intro").textContent=t.intro;$("clientRoleTitle").textContent=t.clientTitle;$("clientRoleDescription").textContent=t.clientDescription;$("partnerRoleTitle").textContent=t.partnerTitle;$("partnerRoleDescription").textContent=t.partnerDescription;$("welcomeFootnote").textContent=t.welcomeFootnote;$("backLabel").textContent=t.back;$("authStatus").textContent=t.auth;$("profileLabel").textContent=t.profile;$("profileName").textContent=t.waiting;$("profileNote").textContent=t.note;$("languageLabel").textContent=t.lang;$("languageNote").textContent=t.langNote;$("footer").textContent=t.footer;document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));}
 async function api(path,options={}){return fetch(gatewayUrl+path,{...options,headers:{"X-Telegram-Init-Data":initData,"Content-Type":"application/json",...(options.headers||{})}});}
 
 async function market(path,options={}){const isForm=options.body instanceof FormData;return fetch(marketplaceUrl+path,{...options,headers:{"X-Telegram-Init-Data":initData,...(isForm?{}:{"Content-Type":"application/json"}),...(options.headers||{})}});}
@@ -166,6 +175,9 @@ async function submitRequest(){
 $("searchButton").addEventListener("click",searchServices);$("requestButton").addEventListener("click",submitRequest);$("partnerSubmitButton").addEventListener("click",submitPartnerApplication);
 
 async function loadProfile(){const t=I18N[lang];if(!initData){$("profileName").textContent=t.missing;$("message").textContent="";return;}try{const r=await api("/me");const data=await r.json();if(!r.ok)throw new Error(data.error||"profile_unavailable");const u=data.user;$("authStatus").textContent=t.ready;$("profileName").textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"—";$("profileNote").textContent=t.status+": "+u.status;$("languageSelect").value=u.preferred_language||"hy";$("message").textContent="";}catch(e){$("profileName").textContent=t.failed;const errors={telegram_auth_not_configured:"Telegram bot token ещё не настроен на сервере.",telegram_init_data_missing:"Telegram не передал данные входа. Закройте Mini App и откройте его кнопкой в чате бота.",telegram_init_data_too_large:"Данные входа Telegram имеют неверный формат.",telegram_init_data_duplicate_fields:"Данные входа Telegram имеют неверный формат.",telegram_init_data_hash_missing:"Telegram не передал подпись входа.",telegram_init_data_signature_invalid:"Подпись Telegram не совпала. Нужно проверить токен бота, установленный в Supabase.",telegram_auth_date_invalid:"Время авторизации Telegram недействительно.",telegram_init_data_expired:"Данные авторизации устарели. Закройте Mini App и откройте заново.",telegram_user_invalid:"Telegram не передал корректный профиль.",profile_initialization_failed:"Вход подтверждён, но не удалось создать профиль в базе.",profile_load_failed:"Вход подтверждён, но профиль не загрузился из базы.",profile_not_found:"Профиль не найден после авторизации."};$("message").textContent=errors[e.message]||("Ошибка авторизации: "+String(e.message||"unknown_error"));}}
+function enterRole(role){$("welcomeScreen").classList.add("hidden");$("backButton").classList.remove("hidden");$("profilePanel").classList.remove("hidden");$("languagePanel").classList.remove("hidden");$("servicePanel").classList.toggle("hidden",role!=="client");$("requestPanel").classList.toggle("hidden",role!=="client");$("partnerPanel").classList.toggle("hidden",role!=="partner");$("footer").classList.remove("hidden");window.scrollTo({top:0,behavior:"auto"});}
+function showWelcome(){$("welcomeScreen").classList.remove("hidden");$("backButton").classList.add("hidden");["profilePanel","languagePanel","servicePanel","partnerPanel","requestPanel","footer"].forEach(id=>$(id).classList.add("hidden"));window.scrollTo({top:0,behavior:"auto"});}
+$("clientRoleButton").addEventListener("click",()=>enterRole("client"));$("partnerRoleButton").addEventListener("click",()=>enterRole("partner"));$("backButton").addEventListener("click",showWelcome);
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>{lang=b.dataset.lang;paint();loadProfile();}));
 $("languageSelect").addEventListener("change",async e=>{if(!initData)return;try{const r=await api("/language",{method:"POST",body:JSON.stringify({language:e.target.value})});const d=await r.json();if(!r.ok)throw new Error(d.error);$("message").textContent=I18N[lang].saved;}catch{$("message").textContent=I18N[lang].saveFailed;}});
 try{const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand();initData=tg.initData||"";if(tg.initDataUnsafe?.user?.language_code&&["hy","ru","en"].includes(tg.initDataUnsafe.user.language_code))lang=tg.initDataUnsafe.user.language_code;}}catch{}
