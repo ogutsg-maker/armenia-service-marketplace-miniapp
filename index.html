@@ -196,14 +196,14 @@ async function sendPartnerAI(){
  input.value="";$("partnerAISend").disabled=true;$("partnerAIStatus").textContent=aiText("thinking");aiBubble("user",message);partnerAIHistory.push({role:"user",content:message});
  try{
   const r=await fetch(PARTNER_AI_URL,{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":initData},body:JSON.stringify({language:lang,messages:partnerAIHistory.slice(-16),profile:{first_name:$("profileName").textContent||"",preferred_language:lang},current_fields:partnerAIFields})});
-  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"ai_unavailable");
+  const d=await r.json().catch(()=>({}));if(!r.ok){const detail=typeof d.detail==="string"?d.detail.slice(0,220):"";const err=new Error(d.error||"ai_unavailable");err.aiCode=d.error||"ai_unavailable";err.aiDetail=detail;throw err;}
   if(d.verified_phone){partnerAIFields.phone_e164=d.verified_phone;partnerAIFields.first_name=d.first_name||partnerAIFields.first_name;partnerAIFields.last_name=d.last_name||partnerAIFields.last_name;}
   const answer=String(d.reply||"");if(d.fields&&typeof d.fields==="object"){for(const [k,v] of Object.entries(d.fields)){if(k==="adult_confirmed"){if(v===true)partnerAIFields[k]=true;}else if(typeof v==="string"&&v.trim())partnerAIFields[k]=v.trim();}}
   if(d.fields?.adult_confirmed===true)$("partnerAdult").checked=true;
   if(d.fields?.phone_e164 && !d.fields.phone_verified){/* a phone is only accepted by the registration API after Telegram verification */}
   partnerAIHistory.push({role:"assistant",content:answer});aiBubble("assistant",answer);
   $("partnerAIStatus").textContent="";if(d.ready){renderPartnerAIReview();}else $("partnerAIReview").classList.add("hidden");
- }catch(e){$("partnerAIStatus").textContent=aiText("error");}
+ }catch(e){const code=e?.aiCode||e?.message||"ai_unavailable";const detail=e?.aiDetail||"";const labels={ai_provider_not_configured:"Supabase не видит секрет GROQ_API_KEY. Проверьте, что секрет сохранён именно в проекте ljihvqglrmojhxqlldbr и называется GROQ_API_KEY.",ai_provider_error:"Groq отклонил запрос. Проверьте API key, доступ к модели и лимит Groq.",ai_rate_limited:"Превышен лимит Groq (429). Попробуйте позже.",telegram_auth_invalid:"Telegram не передал действительные данные авторизации. Закройте Mini App и откройте заново из бота.",profile_not_found:"Не найдена запись профиля пользователя в базе данных.",profile_lookup_failed:"Не удалось прочитать профиль пользователя из Supabase.",ai_response_invalid:"Groq вернул ответ в неподдерживаемом формате."};$("partnerAIStatus").textContent=(labels[code]||"AI недоступен. Код: "+String(code).slice(0,80))+(detail?" Детали: "+detail:"");}
  finally{$("partnerAISend").disabled=false;input.focus();}
 }
 function startPartnerAI(){
