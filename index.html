@@ -68,6 +68,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
  <div class="label" id="partnerAIHeading">AI-оператор регистрации бизнеса</div>
  <p class="notice" id="partnerAIIntro">Расскажите о бизнесе обычными словами. Я подготовлю заявку и уточню только недостающие сведения.</p>
  <div id="partnerAIStatus" class="notice" role="status" aria-live="polite"></div>
+ <button class="back-button" id="partnerAIVerifyPhone" type="button">Подтвердить телефон через Telegram</button><div id="partnerAIPhoneMessage" class="notice" role="status" aria-live="polite"></div>
  <div id="partnerAIChat" aria-live="polite" style="display:grid;gap:10px;margin:14px 0"></div>
  <textarea id="partnerAIInput" maxlength="4000" placeholder="Например: занимаюсь ремонтом холодильников в Раздане, выезжаю к клиентам…" style="min-height:90px"></textarea>
  <button class="action" id="partnerAISend" type="button">Отправить AI</button>
@@ -196,6 +197,7 @@ async function sendPartnerAI(){
  try{
   const r=await fetch(PARTNER_AI_URL,{method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":initData},body:JSON.stringify({language:lang,messages:partnerAIHistory.slice(-16),profile:{first_name:$("profileName").textContent||"",preferred_language:lang},current_fields:partnerAIFields})});
   const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"ai_unavailable");
+  if(d.verified_phone){partnerAIFields.phone_e164=d.verified_phone;partnerAIFields.first_name=d.first_name||partnerAIFields.first_name;partnerAIFields.last_name=d.last_name||partnerAIFields.last_name;}
   const answer=String(d.reply||"");if(d.fields&&typeof d.fields==="object")partnerAIFields={...partnerAIFields,...d.fields};
   if(d.fields?.adult_confirmed===true)$("partnerAdult").checked=true;
   if(d.fields?.phone_e164 && !d.fields.phone_verified){/* a phone is only accepted by the registration API after Telegram verification */}
@@ -206,10 +208,11 @@ async function sendPartnerAI(){
 }
 function startPartnerAI(){
  $("cabinetHome").classList.add("hidden");$("cabinetRoomContent").classList.add("hidden");$("profilePanel").classList.add("hidden");$("languagePanel").classList.add("hidden");$("partnerPanel").classList.add("hidden");$("partnerAIPanel").classList.remove("hidden");$("servicePanel").classList.add("hidden");$("requestPanel").classList.add("hidden");
- $("partnerAIHeading").textContent=aiText("heading");$("partnerAIIntro").textContent=aiText("intro");$("partnerAISend").textContent=aiText("send");$("partnerAIConfirm").textContent=aiText("confirm");$("partnerAIEdit").textContent=aiText("edit");
+ $("partnerAIHeading").textContent=aiText("heading");$("partnerAIIntro").textContent=aiText("intro");$("partnerAISend").textContent=aiText("send");$("partnerAIConfirm").textContent=aiText("confirm");$("partnerAIEdit").textContent=aiText("edit");$("partnerAIVerifyPhone").textContent=lang==="ru"?"Подтвердить телефон через Telegram":lang==="en"?"Verify phone through Telegram":"Հաստատել հեռախոսը Telegram-ի միջոցով";
  if(!$("partnerAIChat").children.length)aiBubble("assistant",aiText("start"));window.scrollTo({top:0,behavior:"auto"});
 }
 $("partnerAISend").addEventListener("click",sendPartnerAI);
+$("partnerAIVerifyPhone").addEventListener("click",async()=>{await requestPhoneVerification();$("partnerAIPhoneMessage").textContent=$("phoneVerifyMessage").textContent;});
 $("partnerAIInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendPartnerAI();}});
 $("partnerAIEdit").addEventListener("click",()=>{$("partnerAIReview").classList.add("hidden");$("partnerAIConfirm").classList.add("hidden");$("partnerAIInput").focus();});
 $("partnerAIConfirm").addEventListener("click",async()=>{
