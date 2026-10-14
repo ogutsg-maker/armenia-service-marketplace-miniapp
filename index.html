@@ -325,7 +325,7 @@ $("refreshProfileButton").addEventListener("click",async()=>{await loadProfile()
 
 const adminApiUrl="https://ljihvqglrmojhxqlldbr.supabase.co/functions/v1/admin-review-api";
 async function adminCall(path,method="GET",body){const r=await fetch(adminApiUrl+"/"+path,{method,headers:{"X-Telegram-Init-Data":initData,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||("HTTP "+r.status));return d;}
-function adminText(key){const w={loading:{hy:"Բեռնվում են հայտերը…",ru:"Загружаю заявки…",en:"Loading applications…"},empty:{hy:"Սպասող հայտեր չկան։",ru:"Нет заявок, ожидающих проверки.",en:"No applications awaiting review."},docs:{hy:"Փաստաթղթեր",ru:"Документы",en:"Documents"},open:{hy:"Բացել փաստաթուղթը",ru:"Открыть документ",en:"Open document"},approveDoc:{hy:"Հաստատել փաստաթուղթը",ru:"Одобрить документ",en:"Approve document"},rejectDoc:{hy:"Մերժել փաստաթուղթը",ru:"Отклонить документ",en:"Reject document"},approveCompany:{hy:"Հաստատել ընկերությունը",ru:"Одобрить компанию",en:"Approve company"},changes:{hy:"Ուղարկել ուղղման",ru:"На исправление",en:"Request changes"},rejectCompany:{hy:"Մերժել հայտը",ru:"Отклонить заявку",en:"Reject application"},reason:{hy:"Նշեք որոշման պատճառը",ru:"Причина решения (обязательно)",en:"Decision reason (required)"},reasonRequired:{hy:"Գրեք որոշման պատճառը (առնվազն 3 նիշ)։",ru:"Укажите причину решения (минимум 3 символа).",en:"Enter a reason (at least 3 characters)."},count:{hy:"Ստուգման սպասող հայտեր",ru:"Заявок на проверку",en:"Applications awaiting review"},error:{hy:"Չհաջողվեց բեռնել կամ պահպանել։",ru:"Не удалось загрузить или сохранить изменения.",en:"Could not load or save changes."}};return w[key]?.[lang]||w[key]?.ru||key;}
+function adminText(key){const w={loading:{hy:"Բեռնվում են հայտերը…",ru:"Загружаю заявки…",en:"Loading applications…"},empty:{hy:"Սպասող հայտեր չկան։",ru:"Нет заявок, ожидающих проверки.",en:"No applications awaiting review."},docs:{hy:"Փաստաթղթեր",ru:"Документы",en:"Documents"},open:{hy:"Բացել փաստաթուղթը",ru:"Открыть документ",en:"Open document"},approveDoc:{hy:"Հաստատել փաստաթուղթը",ru:"Одобрить документ",en:"Approve document"},rejectDoc:{hy:"Մերժել փաստաթուղթը",ru:"Отклонить документ",en:"Reject document"},approveCompany:{hy:"Հաստատել ընկերությունը",ru:"Одобрить компанию",en:"Approve company"},changes:{hy:"Ուղարկել ուղղման",ru:"На исправление",en:"Request changes"},rejectCompany:{hy:"Մերժել հայտը",ru:"Отклонить заявку",en:"Reject application"},reason:{hy:"Նշեք որոշման պատճառը",ru:"Причина решения (обязательно)",en:"Decision reason (required)"},reasonRequired:{hy:"Գրեք որոշման պատճառը (առնվազն 3 նիշ)։",ru:"Укажите причину решения (минимум 3 символа).",en:"Enter a reason (at least 3 characters)."},count:{hy:"Ստուգման սպասող հայտեր",ru:"Заявок на проверку",en:"Applications awaiting review"},error:{hy:"Չհաջողվեց բեռնել կամ պահպանել։",ru:"Не удалось загрузить или сохранить изменения.",en:"Could not load or save changes."},edit:{hy:"Խմբագրել",ru:"Редактировать",en:"Edit"},save:{hy:"Պահպանել փոփոխությունները",ru:"Сохранить изменения",en:"Save changes"},cancel:{hy:"Չեղարկել",ru:"Отмена",en:"Cancel"},delete:{hy:"Հեռացնել ընկերությունը",ru:"Удалить компанию",en:"Delete company"},deleteConfirm:{hy:"Հեռացնե՞լ ընկերությունը։ Տվյալները կպահպանվեն աուդիտի և ֆինանսական պատմության համար։",ru:"Удалить компанию? Данные останутся для аудита и финансовой истории.",en:"Delete this company? Data will be retained for audit and financial history."},deleteReason:{hy:"Նշեք հեռացման պատճառը",ru:"Укажите причину удаления",en:"Enter a deletion reason"},noDocument:{hy:"Գրանցման փաստաթուղթ կցված չէ։",ru:"Регистрационный документ не прикреплён.",en:"No registration document attached."},editSaved:{hy:"Փոփոխությունները պահպանվել են։",ru:"Изменения сохранены.",en:"Changes saved."}};return w[key]?.[lang]||w[key]?.ru||key;}
 function adminButton(label,cls,handler){const b=document.createElement("button");b.type="button";b.textContent=label;if(cls)b.className=cls;b.addEventListener("click",handler);return b;}
 async function openAdminPanel(){if(!initData){$("adminStatus").textContent=I18N[lang].missing;return;}try{const r=await api("/me");const d=await r.json();const roles=Array.isArray(d.user?.roles)?d.user.roles:[];if(!roles.some(x=>x==="admin"||x==="superadmin"))throw new Error("admin_access_required");}catch(e){$("adminStatus").textContent=({hy:"Ադմինիստրատորի հասանելիությունը հաստատված չէ։",ru:"Не удалось подтвердить права администратора.",en:"Administrator access could not be verified."}[lang]||"Administrator access could not be verified.");return;}renderAdminCabinet();}
 async function loadAdminApplications(){
@@ -344,7 +344,7 @@ async function loadAdminApplications(){
    const reason=document.createElement("textarea");reason.placeholder=adminText("reason");reason.setAttribute("aria-label",adminText("reason"));card.append(reason);
    const docsTitle=document.createElement("h4");docsTitle.textContent=adminText("docs");card.append(docsTitle);
    const docs=Array.isArray(company.documents)?company.documents:[];
-   if(!docs.length){const none=document.createElement("p");none.className="admin-meta";none.textContent=lang==="ru"?"Документы не прикреплены. Попросите партнёра загрузить регистрационный документ.":lang==="en"?"No documents attached. Ask the partner to upload the registration document.":"Փաստաթուղթ կցված չէ։ Խնդրեք գործընկերոջը վերբեռնել գրանցման փաստաթուղթը։";card.append(none);}
+   if(!docs.length){const none=document.createElement("p");none.className="admin-meta";none.textContent=adminText("noDocument");card.append(none);}
    for(const doc of docs){
     const box=document.createElement("div");box.className="admin-doc";const label=document.createElement("div");label.textContent=[doc.document_type,doc.review_status,Math.ceil((doc.size_bytes||0)/1024)+" KB"].filter(Boolean).join(" · ");box.append(label);
     if(doc.signed_url){const link=document.createElement("a");link.href=doc.signed_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=adminText("open");box.append(link);}
@@ -384,7 +384,38 @@ async function loadAdminApplications(){
     try{await adminCall("company-archive","POST",{company_id:company.id,reason:why.length<3?"Archived by administrator":why});await loadAdminApplications();}
     catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}
    }));
-   card.append(actions);$("adminApplications").append(card);
+   card.append(actions);
+   const tools=document.createElement("div");tools.className="admin-actions";
+   const editPanel=document.createElement("div");editPanel.className="admin-doc";editPanel.hidden=true;
+   const editFields=[
+    ["display_name",lang==="ru"?"Название бизнеса":lang==="en"?"Business name":"Բիզնեսի անվանում",company.display_name||company.legal_name||""],
+    ["legal_name",lang==="ru"?"Юридическое название":lang==="en"?"Legal name":"Իրավաբանական անվանում",company.legal_name||""],
+    ["description",lang==="ru"?"Описание деятельности":lang==="en"?"Business description":"Գործունեության նկարագրություն",company.description||""],
+    ["marz",lang==="ru"?"Область":lang==="en"?"Region":"Մարզ",company.marz||""],
+    ["city",lang==="ru"?"Город":lang==="en"?"City":"Քաղաք",company.city||""],
+    ["village",lang==="ru"?"Село":lang==="en"?"Village":"Գյուղ",company.village||""],
+    ["district",lang==="ru"?"Район":lang==="en"?"District":"Թաղամաս",company.district||""],
+    ["address",lang==="ru"?"Адрес":lang==="en"?"Address":"Հասցե",company.address||""],
+    ["phone_e164",lang==="ru"?"Телефон":lang==="en"?"Phone":"Հեռախոս",company.phone_e164||""],
+    ["email","Email",company.email||""],["company_type",lang==="ru"?"Тип компании":lang==="en"?"Company type":"Բիզնեսի տեսակ",company.company_type||"individual"]
+   ];
+   const controls={};
+   for(const [key,label,value] of editFields){const lab=document.createElement("label");lab.className="admin-meta";lab.textContent=label;const input=key==="description"?document.createElement("textarea"):document.createElement("input");if(key!=="description")input.type="text";input.value=value;input.style.width="100%";input.style.margin="4px 0 8px";if(key==="description")input.rows=3;lab.append(input);editPanel.append(lab);controls[key]=input;}
+   const editActions=document.createElement("div");editActions.className="admin-actions";
+   editActions.append(adminButton(adminText("save"),"",async()=>{
+    const body={company_id:company.id,reason:"Edited by administrator"};for(const [key,input] of Object.entries(controls))body[key]=input.value.trim();
+    try{await adminCall("company-update","POST",body);await loadAdminApplications();$("adminStatus").textContent=adminText("editSaved");}
+    catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}
+   }));
+   editActions.append(adminButton(adminText("cancel"),"secondary",()=>{editPanel.hidden=true;}));editPanel.append(editActions);
+   tools.append(adminButton(adminText("edit"),"secondary",()=>{editPanel.hidden=!editPanel.hidden;}));
+   tools.append(adminButton(adminText("delete"),"danger",async()=>{
+    if(!confirm(adminText("deleteConfirm")))return;const reason=prompt(adminText("deleteReason"));
+    if(!reason||reason.trim().length<3){$("adminStatus").textContent=adminText("reasonRequired");return;}
+    try{await adminCall("company-delete","POST",{company_id:company.id,reason:reason.trim()});await loadAdminApplications();}
+    catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}
+   }));
+   card.append(tools,editPanel);$("adminApplications").append(card);
   }
  }catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}
 }
