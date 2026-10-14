@@ -833,6 +833,9 @@ async function loadAdminAccountDeletions(){
     }
    }
    if(item.status==="approved"){
+    const cancel=document.createElement("button");cancel.type="button";cancel.textContent=({hy:"Չեղարկել հեռացման հայտը",ru:"Отменить запланированное удаление",en:"Cancel scheduled deletion"}[lang]);
+    cancel.addEventListener("click",async()=>{if(!confirm(({hy:"Չեղարկե՞լ հեռացման հայտը և վերականգնել հաշվի մուտքը։ Հեռացված տվյալները ինքնաբերաբար չեն վերականգնվի։",ru:"Отменить удаление и восстановить доступ к аккаунту? Уже удалённые данные автоматически не восстановятся.",en:"Cancel deletion and restore account access? Data already removed will not be restored automatically."}[lang])))return;cancel.disabled=true;try{await adminCall("account-deletion-cancel","POST",{request_id:item.id});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));cancel.disabled=false;}});
+    actions.append(cancel);
     const final=document.createElement("button");final.type="button";final.textContent=({hy:"Վերջնական ջնջել հիմա",ru:"Удалить окончательно сейчас",en:"Permanently delete now"}[lang]);final.style.cssText="background:#492522;color:#ffe5e1";
     final.addEventListener("click",async()=>{if(!confirm(({hy:"Վերջնական ջնջումը չի վերադարձվում։ Ֆինանսական պարտավորությունները նախ կստուգվեն։ Շարունակե՞լ։",ru:"Операция необратима. Сначала проверяются активные заказы и долги. Продолжить?",en:"This cannot be undone. Active bookings and debts are checked first. Continue?"}[lang])))return;final.disabled=true;try{await adminCall("account-delete-now","POST",{request_id:item.id,reason:"Immediate final deletion by administrator"});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));final.disabled=false;}});
     actions.append(final);
