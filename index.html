@@ -633,7 +633,12 @@ async function loadAdminCompanies(){
  const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]||"Loading…");panel.append(status);
  const list=document.createElement("div");list.className="admin-applications";panel.append(list);
  try{
-  const d=await adminCall("companies"),companies=Array.isArray(d.companies)?d.companies:[];
+  const [d,sd]=await Promise.all([adminCall("companies"),adminCall("company-services")]);
+  const companies=Array.isArray(d.companies)?d.companies:[];
+  const allServices=Array.isArray(sd.services)?sd.services:[];
+  const serviceStatusLabel=(value)=>({pending_review:{hy:"Սպասում է ստուգման",ru:"На проверке",en:"Pending review"},changes_requested:{hy:"Ուղղման է վերադարձվել",ru:"Возвращена на исправление",en:"Changes requested"},approved:{hy:"Հաստատված",ru:"Одобрена",en:"Approved"},rejected:{hy:"Մերժված",ru:"Отклонена",en:"Rejected"}}[value]?.[lang]||value||({hy:"Անհայտ",ru:"Не указан",en:"Unknown"}[lang]));
+  const serviceHeading=({hy:"Ընկերության ծառայություններ",ru:"Услуги компании",en:"Company services"}[lang]);
+  const noServices=({hy:"Ծառայություններ դեռ չկան։",ru:"У этой компании пока нет услуг.",en:"This company has no services yet."}[lang]);
   status.textContent=({hy:"Ընկերությունների քանակը՝ ",ru:"Всего компаний: ",en:"Total companies: "}[lang]||"Total companies: ")+companies.length;
   if(!companies.length){const empty=document.createElement("p");empty.textContent=({hy:"Ընկերություններ չկան։",ru:"Компаний пока нет.",en:"No companies found."}[lang]||"No companies found.");list.append(empty);return;}
   for(const c of companies){
@@ -642,6 +647,24 @@ async function loadAdminCompanies(){
    const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=[c.company_type,c.phone_e164,c.review_status,c.lifecycle].filter(Boolean).join(" · ");card.append(meta);
    const address=document.createElement("p");address.textContent=[c.marz,c.city,c.village,c.district,c.address].filter(Boolean).join(" · ");card.append(address);
    if(c.description){const desc=document.createElement("p");desc.textContent=c.description;card.append(desc);}
+   const companyServices=allServices.filter(service=>String(service.company_id)===String(c.id));
+   const serviceSection=document.createElement("section");serviceSection.className="admin-company-services";
+   serviceSection.style.cssText="margin-top:14px;padding-top:12px;border-top:1px solid var(--border,#d9dee5)";
+   const serviceTitle=document.createElement("h5");serviceTitle.textContent=serviceHeading+" ("+companyServices.length+")";serviceTitle.style.margin="0 0 10px";serviceSection.append(serviceTitle);
+   if(!companyServices.length){const emptyServices=document.createElement("p");emptyServices.className="admin-meta";emptyServices.textContent=noServices;serviceSection.append(emptyServices);}
+   for(const service of companyServices){
+    const serviceCard=document.createElement("div");serviceCard.className="admin-company-service";
+    serviceCard.style.cssText="padding:10px;margin:8px 0;border:1px solid var(--border,#d9dee5);border-radius:10px";
+    const serviceName=document.createElement("strong");serviceName.textContent=service.name||"—";serviceCard.append(serviceName);
+    const serviceMeta=document.createElement("p");serviceMeta.className="admin-meta";
+    const amount=service.price_amount!==null&&service.price_amount!==undefined&&service.price_amount!==""?new Intl.NumberFormat(lang==="en"?"en-US":lang==="ru"?"ru-RU":"hy-AM").format(Number(service.price_amount))+" "+(service.currency||"AMD"):"";
+    const priceType=service.price_type==="starting_from"?({hy:"սկսած",ru:"от",en:"from"}[lang]):"";
+    serviceMeta.textContent=[amount?(priceType?priceType+" ":"")+amount:"",service.service_mode||"",serviceStatusLabel(service.review_status),service.active?({hy:"Ակտիվ",ru:"Активна",en:"Active"}[lang]):({hy:"Ոչ ակտիվ",ru:"Неактивна",en:"Inactive"}[lang])].filter(Boolean).join(" · ");
+    serviceCard.append(serviceMeta);
+    if(service.description){const serviceDesc=document.createElement("p");serviceDesc.textContent=service.description;serviceCard.append(serviceDesc);}
+    serviceSection.append(serviceCard);
+   }
+   card.append(serviceSection);
    list.append(card);
   }
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
