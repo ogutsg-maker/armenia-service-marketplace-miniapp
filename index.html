@@ -795,8 +795,24 @@ async function loadAdminAccountDeletions(){
  const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]);panel.append(status);
  const list=document.createElement("div");panel.append(list);
  try{
-  const data=await adminCall("account-deletion-requests"),items=Array.isArray(data.requests)?data.requests:[];
-  status.textContent=({hy:"Հայտերի քանակը՝ ",ru:"Заявок: ",en:"Requests: "}[lang])+items.length;
+  const [userData,data]=await Promise.all([adminCall("account-users"),adminCall("account-deletion-requests")]);
+  const users=Array.isArray(userData.users)?userData.users:[];
+  const items=Array.isArray(data.requests)?data.requests:[];
+  status.textContent=({hy:"Օգտատերեր՝ ",ru:"Аккаунтов: ",en:"Accounts: "}[lang])+users.length+" · "+({hy:"Հայտեր՝ ",ru:"Заявок: ",en:"Requests: "}[lang])+items.length;
+  const userHeading=document.createElement("h4");userHeading.textContent=({hy:"Բոլոր հաշիվները",ru:"Все аккаунты",en:"All accounts"}[lang]);list.append(userHeading);
+  for(const u of users){
+   const roles=Array.isArray(u.roles)?u.roles.map(x=>x.role):[];
+   const card=document.createElement("article");card.className="admin-company";
+   const name=document.createElement("h4");name.textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"—";card.append(name);
+   const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=[u.phone_e164,"Telegram ID: "+u.telegram_id,"Status: "+u.status,"Roles: "+roles.join(", ")].filter(Boolean).join(" · ");card.append(meta);
+   if(!roles.some(x=>x==="admin"||x==="superadmin")&&!["soft_deleted","deletion_pending"].includes(u.status)){
+    const frozen=u.status==="frozen";const b=document.createElement("button");b.type="button";b.textContent=frozen?({hy:"Ապասառեցնել",ru:"Разморозить",en:"Unfreeze"}[lang]):({hy:"Սառեցնել հաշիվը",ru:"Заморозить аккаунт",en:"Freeze account"}[lang]);
+    b.addEventListener("click",async()=>{const reason=prompt(({hy:"Պատճառը",ru:"Причина",en:"Reason"}[lang]),frozen?"Restored by administrator":"Frozen by administrator");if(reason===null||reason.trim().length<3)return;b.disabled=true;try{await adminCall("account-freeze","POST",{user_id:u.id,frozen:!frozen,reason:reason.trim()});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));b.disabled=false;}});
+    card.append(b);
+   }
+   list.append(card);
+  }
+  const requestHeading=document.createElement("h4");requestHeading.textContent=({hy:"Հեռացման հայտեր",ru:"Заявки на удаление",en:"Deletion requests"}[lang]);list.append(requestHeading);
   if(!items.length){const empty=document.createElement("p");empty.className="room-placeholder";empty.textContent=({hy:"Հաշիվների հեռացման հայտեր դեռ չկան։",ru:"Заявок на удаление аккаунта пока нет.",en:"No account deletion requests yet."}[lang]);list.append(empty);return;}
   for(const item of items){
    const card=document.createElement("article");card.className="admin-company";
