@@ -843,7 +843,7 @@ async function loadAdminAccountDeletions(){
 }
 
 
-async async function cancelAccountDeletion(button,statusBox,reloadStatus){
+async function cancelAccountDeletion(button,statusBox,reloadStatus){
  if(!initData){statusBox.textContent=I18N[lang].missing;return;}
  const promptText=({hy:"Չեղարկե՞լ հաշվի հեռացումը և վերականգնել մուտքը։",ru:"Отменить удаление аккаунта и восстановить доступ? Профиль и данные компании, удалённые при одобрении, автоматически не восстановятся.",en:"Cancel account deletion and restore access? Profile and company data already removed during approval will not be restored automatically."}[lang]);
  if(!confirm(promptText))return;
@@ -857,7 +857,7 @@ async async function cancelAccountDeletion(button,statusBox,reloadStatus){
   setTimeout(()=>window.location.reload(),900);
  }catch(e){statusBox.textContent=String(e.message||e);button.disabled=false;}
 }
-function loadAccountDeletionStatus(){
+async function loadAccountDeletionStatus(){
  const box=$("accountDeletionStatus"),button=$("requestAccountDeletionButton");if(!box||!button)return;
  if(!initData){button.disabled=true;box.textContent=I18N[lang].missing;return;}
  try{
