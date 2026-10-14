@@ -597,7 +597,7 @@ async function loadPartnerServices(){
    const ch=document.createElement("h4");ch.textContent=c.display_name||c.legal_name||L.company;cc.append(ch);
    if(c.deletion_requested_at){
     const pending=document.createElement("p");pending.className="notice";pending.textContent=L.deletePending;cc.append(pending);
-   }else if(c.review_status==="approved"){
+   }else{
     const request=document.createElement("button");request.type="button";request.className="action";request.textContent=L.deleteCompany;
     request.addEventListener("click",async()=>{
      if(!confirm(L.deleteConfirm))return;
