@@ -573,7 +573,7 @@ async function loadPartnerCompanies(){
  const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]||"Loading…");panel.append(status);
  const list=document.createElement("div");list.className="admin-applications";panel.append(list);
  try{
-  const r=await market("my-companies"),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
+  const r=await market("/my-companies"),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
   const companies=Array.isArray(d.companies)?d.companies:[];
   status.textContent=companies.length?({hy:"Ձեր բիզնեսների ցանկը",ru:"Список ваших компаний",en:"Your company list"}[lang]||"Your company list"):({hy:"Դեռ գրանցված ընկերություն չկա։",ru:"Пока нет зарегистрированных компаний.",en:"No registered companies yet."}[lang]||"No companies yet.");
   for(const c of companies){
