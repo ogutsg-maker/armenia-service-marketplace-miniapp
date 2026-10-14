@@ -62,6 +62,12 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 <div class="value" id="profileName">Ожидаем Telegram Web App…</div>
 <div class="notice" id="profileNote">Данные профиля будут использованы при регистрации бизнеса и не будут запрашиваться повторно.</div>
 <div id="message" role="status" aria-live="polite"></div>
+<div class="panel" style="margin-top:18px">
+ <h3 id="accountSafetyTitle">Управление аккаунтом</h3>
+ <p class="notice" id="accountSafetyDescription">Запрос на удаление рассматривает администратор. Двухлетний срок начинается после одобрения.</p>
+ <button class="back-button" id="requestAccountDeletionButton" type="button">Запросить удаление аккаунта</button>
+ <p class="notice" id="accountDeletionStatus" role="status" aria-live="polite"></p>
+</div>
 </section>
 <section class="panel hidden" id="languagePanel">
 <div class="label" id="languageLabel">Հավելվածի լեզուն</div>
@@ -487,6 +493,7 @@ partner:[
 admin:[
 ["dashboard","⌂",{hy:"Գլխավոր վահանակ",ru:"Обзор платформы",en:"Platform overview"},{hy:"Հարթակի ընդհանուր վիճակ և ցուցանիշներ",ru:"Общее состояние и показатели платформы",en:"Platform health and key metrics"}],
 ["users","♙",{hy:"Օգտատերեր և դերեր",ru:"Пользователи и роли",en:"Users and roles"},{hy:"Հաշիվներ, հասանելիություններ և դերեր",ru:"Аккаунты, доступы и роли",en:"Accounts, permissions and roles"}],
+["accounts","⏳",{hy:"Հաշիվների հեռացում",ru:"Удаление аккаунтов",en:"Account deletion"},{hy:"Սառեցում, հայտերի հաստատում և ժամկետներ",ru:"Заморозка, подтверждение заявок и сроки",en:"Freeze, approve deletion requests and deadlines"}],
 ["applications","▤",{hy:"Գործընկերների հայտեր",ru:"Заявки партнёров",en:"Partner applications"},{hy:"Ընկերությունների և փաստաթղթերի ստուգում",ru:"Проверка компаний и документов",en:"Review companies and documents"}],
 ["companies","▣",{hy:"Ընկերություններ",ru:"Компании",en:"Companies"},{hy:"Կառավարել, ապաակտիվացնել և ստուգել բիզնեսները",ru:"Управление, деактивация и проверка компаний",en:"Manage, deactivate and review businesses"}],
 ["catalog","◇",{hy:"Կատալոգ և ծառայություններ",ru:"Каталог и услуги",en:"Catalog and services"},{hy:"Կատեգորիաներ, ծառայություններ և մոդերացիա",ru:"Категории, услуги и модерация",en:"Categories, services and moderation"}],
@@ -642,7 +649,7 @@ async function loadPartnerCompanies(){
   const action=document.createElement("button");action.type="button";action.className="primary-button";action.textContent=({hy:"Գրանցել բիզնես",ru:"Зарегистрировать бизнес",en:"Register a business"}[lang]||"Register a business");action.addEventListener("click",openBusinessRegistration);panel.append(action);
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
 }
-function openAdminCabinetRoom(id){const room=CABINET_ROOMS.admin.find(x=>x[0]===id);if(!room)return;document.querySelectorAll("#adminCabinetNav button").forEach(b=>b.classList.toggle("active",b.dataset.adminRoom===id));$("adminPanel").classList.add("hidden");$("adminRoomContent").replaceChildren();$("adminRoomContent").classList.remove("hidden");if(id==="applications"){$("adminRoomContent").classList.add("hidden");$("adminPanel").classList.remove("hidden");loadAdminApplications();return;}if(id==="companies"){loadAdminCompanies();return;}if(id==="catalog"){loadAdminServiceApplications();return;}const title=document.createElement("h3");title.textContent=roomLang(room[2]);const desc=document.createElement("p");desc.className="notice";desc.textContent=roomLang(room[3]);const note=document.createElement("p");note.className="room-placeholder";note.textContent=({hy:"Կառուցվածքը պատրաստ է։ Իրական կառավարումը կմիանա հաջորդ փուլում՝ գործող API-ների և իրավունքների ստուգումից հետո։ Supabase-ի սխեման չենք փոխում։",ru:"Каркас готов. Реальное управление подключим после проверки существующих API и прав доступа. Схему Supabase не меняем.",en:"The shell is ready. Real management will be connected after checking existing APIs and permissions. No Supabase schema changes."}[lang]||"Shell ready; no database changes.");$("adminRoomContent").append(title,desc,note);}
+function openAdminCabinetRoom(id){const room=CABINET_ROOMS.admin.find(x=>x[0]===id);if(!room)return;document.querySelectorAll("#adminCabinetNav button").forEach(b=>b.classList.toggle("active",b.dataset.adminRoom===id));$("adminPanel").classList.add("hidden");$("adminRoomContent").replaceChildren();$("adminRoomContent").classList.remove("hidden");if(id==="applications"){$("adminRoomContent").classList.add("hidden");$("adminPanel").classList.remove("hidden");loadAdminApplications();return;}if(id==="accounts"){loadAdminAccountDeletions();return;}if(id==="companies"){loadAdminCompanies();return;}if(id==="catalog"){loadAdminServiceApplications();return;}const title=document.createElement("h3");title.textContent=roomLang(room[2]);const desc=document.createElement("p");desc.className="notice";desc.textContent=roomLang(room[3]);const note=document.createElement("p");note.className="room-placeholder";note.textContent=({hy:"Կառուցվածքը պատրաստ է։ Իրական կառավարումը կմիանա հաջորդ փուլում՝ գործող API-ների և իրավունքների ստուգումից հետո։ Supabase-ի սխեման չենք փոխում։",ru:"Каркас готов. Реальное управление подключим после проверки существующих API и прав доступа. Схему Supabase не меняем.",en:"The shell is ready. Real management will be connected after checking existing APIs and permissions. No Supabase schema changes."}[lang]||"Shell ready; no database changes.");$("adminRoomContent").append(title,desc,note);}
 async function loadAdminServiceApplications(){
  const panel=$("adminRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
  const labels={hy:{title:"Ծառայությունների ստուգում",loading:"Բեռնվում է…",empty:"Սպասող ծառայություններ չկան։",price:"Գին",company:"Բիզնես",approve:"Հաստատել ծառայությունը",changes:"Ուղարկել ուղղման",reject:"Մերժել",reason:"Որոշման պատճառ (առնվազն 3 նիշ)",failed:"Չհաջողվեց բեռնել հայտերը։",done:"Որոշումը պահպանվեց։"},ru:{title:"Модерация услуг",loading:"Загрузка…",empty:"Нет услуг, ожидающих проверки.",price:"Цена",company:"Компания",approve:"Одобрить услугу",changes:"Запросить исправления",reject:"Отклонить",reason:"Причина решения (минимум 3 символа)",failed:"Не удалось загрузить заявки.",done:"Решение сохранено."},en:{title:"Service moderation",loading:"Loading…",empty:"No services awaiting review.",price:"Price",company:"Business",approve:"Approve service",changes:"Request changes",reject:"Reject",reason:"Decision reason (at least 3 characters)",failed:"Could not load applications.",done:"Decision saved."}};
@@ -781,6 +788,55 @@ function enterRole(role){renderCabinet(role);if(role==="partner"){loadProfile().
 function showWelcome(){$("adminPanel").classList.add("hidden");$("adminCabinetPanel").classList.add("hidden");$("welcomeScreen").classList.remove("hidden");$("backButton").classList.add("hidden");$("cabinetNav").classList.add("hidden");["cabinetHome","cabinetRoomContent","profilePanel","languagePanel","servicePanel","partnerPanel","partnerAIPanel","requestPanel","adminCabinetPanel","footer"].forEach(id=>$(id).classList.add("hidden"));window.scrollTo({top:0,behavior:"auto"});}
 async function openBusinessRegistration(){if(!currentProfile)await loadProfile();if(!profileComplete()){openOwnerProfile();$("profileFormStatus").textContent=lang==="ru"?"Сначала завершите профиль владельца: имя, фамилия, дата рождения и подтверждённый телефон.":lang==="en"?"Complete the owner profile first: name, surname, birth date and verified phone.":"Նախ լրացրեք սեփականատիրոջ պրոֆիլը՝ անուն, ազգանուն, ծննդյան ամսաթիվ և հաստատված հեռախոս։";return;}startPartnerAI();}
 function openPartnerServices(){activeRole="partner";$("welcomeScreen").classList.add("hidden");$("adminCabinetPanel").classList.add("hidden");$("adminPanel").classList.add("hidden");$("profilePanel").classList.add("hidden");$("partnerPanel").classList.add("hidden");$("partnerAIPanel").classList.add("hidden");$("requestPanel").classList.add("hidden");$("servicePanel").classList.add("hidden");$("cabinetNav").classList.remove("hidden");$("backButton").classList.remove("hidden");$("cabinetHome").classList.remove("hidden");$("cabinetRooms").classList.add("hidden");$("cabinetSummary").classList.add("hidden");$("cabinetExtra").classList.add("hidden");$("cabinetPrimaryAction").classList.add("hidden");$("cabinetRoomContent").classList.remove("hidden");loadPartnerServices();window.scrollTo({top:0,behavior:"auto"});}
+
+async function loadAdminAccountDeletions(){
+ const panel=$("adminRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
+ const title=document.createElement("h3");title.textContent=({hy:"Հաշիվների կառավարում",ru:"Управление аккаунтами",en:"Account management"}[lang]);panel.append(title);
+ const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]);panel.append(status);
+ const list=document.createElement("div");panel.append(list);
+ try{
+  const data=await adminCall("account-deletion-requests"),items=Array.isArray(data.requests)?data.requests:[];
+  status.textContent=({hy:"Հայտերի քանակը՝ ",ru:"Заявок: ",en:"Requests: "}[lang])+items.length;
+  if(!items.length){const empty=document.createElement("p");empty.className="room-placeholder";empty.textContent=({hy:"Հաշիվների հեռացման հայտեր դեռ չկան։",ru:"Заявок на удаление аккаунта пока нет.",en:"No account deletion requests yet."}[lang]);list.append(empty);return;}
+  for(const item of items){
+   const card=document.createElement("article");card.className="admin-company";
+   const u=item.user||{};
+   const name=document.createElement("h4");name.textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"Deleted / unknown user";card.append(name);
+   const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=[u.phone_e164,"Telegram ID: "+(u.telegram_id||"—"),"Status: "+(u.status||"—")].filter(Boolean).join(" · ");card.append(meta);
+   const reason=document.createElement("p");reason.textContent=({hy:"Պատճառը՝ ",ru:"Причина: ",en:"Reason: "}[lang])+(item.request_reason||"—");card.append(reason);
+   const details=document.createElement("p");details.className="admin-meta";details.textContent=({hy:"Հայտ՝ ",ru:"Заявка: ",en:"Requested: "}[lang])+new Date(item.requested_at).toLocaleString()+" · "+({hy:"Կարգավիճակ՝ ",ru:"Статус: ",en:"Status: "}[lang])+item.status+(item.scheduled_for?" · "+({hy:"Վերջնաժամկետ՝ ",ru:"Окончательное удаление: ",en:"Final deletion: "}[lang])+new Date(item.scheduled_for).toLocaleString():"");card.append(details);
+   if(item.finalization_error){const err=document.createElement("p");err.className="notice";err.textContent="⚠ "+item.finalization_error;card.append(err);}
+   const actions=document.createElement("div");actions.className="admin-actions";
+   if(item.status==="pending"){
+    for(const action of ["approve","reject"]){
+     const b=document.createElement("button");b.type="button";b.textContent=action==="approve"?({hy:"Հաստատել · 2 տարի",ru:"Одобрить · 2 года",en:"Approve · 2 years"}[lang]):({hy:"Մերժել",ru:"Отклонить",en:"Reject"}[lang]);
+     b.addEventListener("click",async()=>{const note=prompt(({hy:"Նշեք որոշման պատճառը",ru:"Укажите причину решения",en:"Enter the decision reason"}[lang]),action==="approve"?"Approved by administrator":"Rejected by administrator");if(note===null||note.trim().length<3)return;b.disabled=true;try{await adminCall("account-deletion-review","POST",{request_id:item.id,action,note:note.trim()});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));b.disabled=false;}});
+     actions.append(b);
+    }
+   }
+   if(item.status==="approved"){
+    const freeze=document.createElement("button");freeze.type="button";freeze.textContent=u.status==="frozen"?({hy:"Ապասառեցնել",ru:"Разморозить",en:"Unfreeze"}[lang]):({hy:"Սառեցնել հաշիվը",ru:"Заморозить аккаунт",en:"Freeze account"}[lang]);
+    freeze.addEventListener("click",async()=>{const frozen=u.status!=="frozen";const note=prompt(({hy:"Պատճառը",ru:"Причина",en:"Reason"}[lang]),frozen?"Administrator action":"Restored by administrator");if(note===null||note.trim().length<3)return;freeze.disabled=true;try{await adminCall("account-freeze","POST",{user_id:item.user_id,frozen,reason:note.trim()});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));freeze.disabled=false;}});
+    actions.append(freeze);
+    const final=document.createElement("button");final.type="button";final.textContent=({hy:"Վերջնական ջնջել հիմա",ru:"Удалить окончательно сейчас",en:"Permanently delete now"}[lang]);final.style.cssText="background:#492522;color:#ffe5e1";
+    final.addEventListener("click",async()=>{if(!confirm(({hy:"Վերջնական ջնջումը չի վերադարձվում։ Ֆինանսական պարտավորությունները նախ կստուգվեն։ Շարունակե՞լ։",ru:"Операция необратима. Сначала проверяются активные заказы и долги. Продолжить?",en:"This cannot be undone. Active bookings and debts are checked first. Continue?"}[lang])))return;final.disabled=true;try{await adminCall("account-delete-now","POST",{request_id:item.id,reason:"Immediate final deletion by administrator"});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));final.disabled=false;}});
+    actions.append(final);
+   }
+   card.append(actions);list.append(card);
+  }
+ }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել հաշիվները։",ru:"Не удалось загрузить аккаунты: ",en:"Could not load accounts: "}[lang])+String(e.message||e);}
+}
+
+
+$("requestAccountDeletionButton").addEventListener("click",async()=>{
+ if(!initData){$("accountDeletionStatus").textContent=I18N[lang].missing;return;}
+ const promptText=({hy:"Նշեք հաշիվը հեռացնելու պատճառը",ru:"Укажите причину удаления аккаунта",en:"Why do you want to delete your account?"}[lang]);
+ const reason=prompt(promptText);if(reason===null)return;if(reason.trim().length<3){$("accountDeletionStatus").textContent=({hy:"Պատճառը պետք է լինի առնվազն 3 նիշ։",ru:"Причина должна содержать минимум 3 символа.",en:"Reason must be at least 3 characters."}[lang]);return;}
+ const b=$("requestAccountDeletionButton");b.disabled=true;
+ try{const r=await market("/account-deletion-request",{method:"POST",body:JSON.stringify({reason:reason.trim()})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||("HTTP "+r.status));$("accountDeletionStatus").textContent=({hy:"Հայտն ուղարկվել է ադմինիստրատորին։ Երկու տարվա ժամկետը կսկսվի միայն հաստատումից հետո։",ru:"Заявка отправлена администратору. Двухлетний срок начнётся только после одобрения.",en:"Request sent to the administrator. The two-year period starts only after approval."}[lang]);}
+ catch(e){$("accountDeletionStatus").textContent=String(e.message||e);}
+ finally{b.disabled=false;}
+});
 $("clientRoleButton").addEventListener("click",()=>enterRole("client"));$("partnerRoleButton").addEventListener("click",()=>enterRole("partner"));$("adminButton").addEventListener("click",openAdminPanel);$("backButton").addEventListener("click",showWelcome);
 $("switchRoleButton").addEventListener("click",()=>renderCabinet(activeRole==="client"?"partner":"client"));
 $("openProfileButton").addEventListener("click",openOwnerProfile);
