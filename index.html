@@ -562,12 +562,57 @@ function openCabinetRoom(role,id){
  if(role==="client"&&id==="search"){$("cabinetRoomContent").classList.add("hidden");$("servicePanel").classList.remove("hidden");return;}
  if(role==="client"&&id==="requests"){$("cabinetRoomContent").classList.add("hidden");$("requestPanel").classList.remove("hidden");return;}
  if(id==="profile"){openOwnerProfile();return;}
- if(role==="partner"&&id==="companies"){$("cabinetRoomContent").classList.add("hidden");openBusinessRegistration();return;}
+ if(role==="partner"&&id==="companies"){$("cabinetRoomContent").classList.add("hidden");loadPartnerCompanies();return;}
  if(role==="partner"&&id==="documents"){$("cabinetRoomContent").classList.add("hidden");openBusinessRegistration();$("partnerPanel").scrollIntoView({behavior:"smooth",block:"start"});return;}
  if(role==="partner"){appendPartnerRoomDetails($("cabinetRoomContent"),id);return;}
  const hint=document.createElement("p");hint.className="room-placeholder";hint.textContent=({hy:"Կառուցվածքը պատրաստ է։ Իրական տվյալներն ու գործողությունները կմիանան հաջորդ փուլում։ Տվյալների բազան չենք փոխում։",ru:"Каркас комнаты готов. Реальные данные и действия подключим следующим этапом. Базу данных не меняем.",en:"The room shell is ready. Real data and actions will be connected in a later stage. The database will not be changed."}[lang]||"Room shell ready; database unchanged.");$("cabinetRoomContent").append(hint);
 }
-function openAdminCabinetRoom(id){const room=CABINET_ROOMS.admin.find(x=>x[0]===id);if(!room)return;document.querySelectorAll("#adminCabinetNav button").forEach(b=>b.classList.toggle("active",b.dataset.adminRoom===id));$("adminPanel").classList.add("hidden");$("adminRoomContent").replaceChildren();$("adminRoomContent").classList.remove("hidden");if(id==="applications"){$("adminRoomContent").classList.add("hidden");$("adminPanel").classList.remove("hidden");loadAdminApplications();return;}const title=document.createElement("h3");title.textContent=roomLang(room[2]);const desc=document.createElement("p");desc.className="notice";desc.textContent=roomLang(room[3]);const note=document.createElement("p");note.className="room-placeholder";note.textContent=({hy:"Կառուցվածքը պատրաստ է։ Իրական կառավարումը կմիանա հաջորդ փուլում՝ գործող API-ների և իրավունքների ստուգումից հետո։ Supabase-ի սխեման չենք փոխում։",ru:"Каркас готов. Реальное управление подключим после проверки существующих API и прав доступа. Схему Supabase не меняем.",en:"The shell is ready. Real management will be connected after checking existing APIs and permissions. No Supabase schema changes."}[lang]||"Shell ready; no database changes.");$("adminRoomContent").append(title,desc,note);}
+async function loadPartnerCompanies(){
+ const panel=$("cabinetRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
+ const title=document.createElement("h3");title.textContent=({hy:"Իմ ընկերությունները",ru:"Мои компании",en:"My companies"}[lang]||"My companies");panel.append(title);
+ const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]||"Loading…");panel.append(status);
+ const list=document.createElement("div");list.className="admin-applications";panel.append(list);
+ try{
+  const r=await market("my-companies"),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
+  const companies=Array.isArray(d.companies)?d.companies:[];
+  status.textContent=companies.length?({hy:"Ձեր բիզնեսների ցանկը",ru:"Список ваших компаний",en:"Your company list"}[lang]||"Your company list"):({hy:"Դեռ գրանցված ընկերություն չկա։",ru:"Пока нет зарегистрированных компаний.",en:"No registered companies yet."}[lang]||"No companies yet.");
+  for(const c of companies){
+   const card=document.createElement("article");card.className="admin-company";
+   const name=document.createElement("h4");name.textContent=c.display_name||c.legal_name||"—";card.append(name);
+   const statusLine=document.createElement("p");statusLine.className="admin-meta";
+   const review=({pending_review:{hy:"Սպասում է ստուգման",ru:"Ожидает проверки",en:"Pending review"},approved:{hy:"Հաստատված",ru:"Одобрена",en:"Approved"},rejected:{hy:"Մերժված",ru:"Отклонена",en:"Rejected"},changes_requested:{hy:"Պահանջվում են ուղղումներ",ru:"Требуются исправления",en:"Changes requested"}}[c.review_status]||{});const life=({active:{hy:"Ակտիվ",ru:"Активна",en:"Active"},inactive:{hy:"Ապաակտիվ",ru:"Неактивна",en:"Inactive"},frozen:{hy:"Սառեցված",ru:"Заморожена",en:"Frozen"}}[c.lifecycle]||{});
+   statusLine.textContent=(review[lang]||c.review_status||"—")+" · "+(life[lang]||c.lifecycle||"—");card.append(statusLine);
+   const addr=document.createElement("p");addr.textContent=[c.marz,c.city,c.village,c.district,c.address].filter(Boolean).join(" · ");card.append(addr);
+   if(c.description){const desc=document.createElement("p");desc.textContent=c.description;card.append(desc);}
+   const svcTitle=document.createElement("strong");svcTitle.textContent=({hy:"Ծառայություններ",ru:"Услуги",en:"Services"}[lang]||"Services");card.append(svcTitle);
+   const services=Array.isArray(c.services)?c.services:[];
+   if(!services.length){const empty=document.createElement("p");empty.className="admin-meta";empty.textContent=({hy:"Ծառայություններ դեռ ավելացված չեն։",ru:"Услуги пока не добавлены.",en:"No services added yet."}[lang]||"No services yet.");card.append(empty);}
+   for(const service of services){const row=document.createElement("p");row.className="admin-meta";row.textContent=service.name+" · "+(service.active?({hy:"Ակտիվ",ru:"Активна",en:"Active"}[lang]||"Active"):({hy:"Անջատված",ru:"Неактивна",en:"Inactive"}[lang]||"Inactive"));card.append(row);}
+   list.append(card);
+  }
+  const action=document.createElement("button");action.type="button";action.className="primary-button";action.textContent=({hy:"Գրանցել բիզնես",ru:"Зарегистрировать бизнес",en:"Register a business"}[lang]||"Register a business");action.addEventListener("click",openBusinessRegistration);panel.append(action);
+ }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
+}
+function openAdminCabinetRoom(id){const room=CABINET_ROOMS.admin.find(x=>x[0]===id);if(!room)return;document.querySelectorAll("#adminCabinetNav button").forEach(b=>b.classList.toggle("active",b.dataset.adminRoom===id));$("adminPanel").classList.add("hidden");$("adminRoomContent").replaceChildren();$("adminRoomContent").classList.remove("hidden");if(id==="applications"){$("adminRoomContent").classList.add("hidden");$("adminPanel").classList.remove("hidden");loadAdminApplications();return;}if(id==="companies"){loadAdminCompanies();return;}const title=document.createElement("h3");title.textContent=roomLang(room[2]);const desc=document.createElement("p");desc.className="notice";desc.textContent=roomLang(room[3]);const note=document.createElement("p");note.className="room-placeholder";note.textContent=({hy:"Կառուցվածքը պատրաստ է։ Իրական կառավարումը կմիանա հաջորդ փուլում՝ գործող API-ների և իրավունքների ստուգումից հետո։ Supabase-ի սխեման չենք փոխում։",ru:"Каркас готов. Реальное управление подключим после проверки существующих API и прав доступа. Схему Supabase не меняем.",en:"The shell is ready. Real management will be connected after checking existing APIs and permissions. No Supabase schema changes."}[lang]||"Shell ready; no database changes.");$("adminRoomContent").append(title,desc,note);}
+async function loadAdminCompanies(){
+ const panel=$("adminRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
+ const title=document.createElement("h3");title.textContent=({hy:"Բոլոր ընկերությունները",ru:"Все компании",en:"All companies"}[lang]||"All companies");panel.append(title);
+ const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]||"Loading…");panel.append(status);
+ const list=document.createElement("div");list.className="admin-applications";panel.append(list);
+ try{
+  const d=await adminCall("companies"),companies=Array.isArray(d.companies)?d.companies:[];
+  status.textContent=({hy:"Ընկերությունների քանակը՝ ",ru:"Всего компаний: ",en:"Total companies: "}[lang]||"Total companies: ")+companies.length;
+  if(!companies.length){const empty=document.createElement("p");empty.textContent=({hy:"Ընկերություններ չկան։",ru:"Компаний пока нет.",en:"No companies found."}[lang]||"No companies found.");list.append(empty);return;}
+  for(const c of companies){
+   const card=document.createElement("article");card.className="admin-company";
+   const name=document.createElement("h4");name.textContent=c.display_name||c.legal_name||"—";card.append(name);
+   const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=[c.company_type,c.phone_e164,c.review_status,c.lifecycle].filter(Boolean).join(" · ");card.append(meta);
+   const address=document.createElement("p");address.textContent=[c.marz,c.city,c.village,c.district,c.address].filter(Boolean).join(" · ");card.append(address);
+   if(c.description){const desc=document.createElement("p");desc.textContent=c.description;card.append(desc);}
+   list.append(card);
+  }
+ }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
+}
 function renderAdminCabinet(){$("welcomeScreen").classList.add("hidden");["cabinetNav","cabinetHome","profilePanel","languagePanel","servicePanel","partnerPanel","requestPanel"].forEach(id=>$(id).classList.add("hidden"));$("adminPanel").classList.add("hidden");$("adminCabinetPanel").classList.remove("hidden");$("backButton").classList.remove("hidden");$("footer").classList.add("hidden");const labels={hy:{title:"Ադմինիստրատորի կաբինետ",intro:"Հարթակի կառավարում՝ ըստ թույլտվությունների։"},ru:{title:"Кабинет администратора",intro:"Управление платформой с проверкой прав доступа."},en:{title:"Administrator cabinet",intro:"Manage the platform with permission checks."}};const t=labels[lang]||labels.ru;$("adminCabinetTitle").textContent=t.title;$("adminCabinetIntro").textContent=t.intro;const nav=$("adminCabinetNav");nav.replaceChildren();for(const room of CABINET_ROOMS.admin){const b=document.createElement("button");b.type="button";b.dataset.adminRoom=room[0];b.textContent=roomLang(room[2]);b.addEventListener("click",()=>openAdminCabinetRoom(room[0]));nav.append(b);}openAdminCabinetRoom("dashboard");window.scrollTo({top:0,behavior:"auto"});}
 
 let activeRole="client";
