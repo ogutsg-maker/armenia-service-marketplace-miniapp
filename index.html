@@ -79,7 +79,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 
 <section class="panel hidden" id="partnerAIPanel">
  <div class="label" id="partnerAIHeading">AI-оператор регистрации бизнеса</div>
- <p class="notice" id="partnerAIIntro">Գրանցման հայտ</p>
+ <p class="notice" id="partnerAIIntro">Գրանցման հայտի լրացում և ուղարկում</p>
  <div id="partnerAIStatus" class="notice" role="status" aria-live="polite"></div>
  <button class="back-button" id="partnerAIVerifyPhone" type="button">Подтвердить телефон через Telegram</button><div id="partnerAIPhoneMessage" class="notice" role="status" aria-live="polite"></div>
  <div id="partnerAIChat" aria-live="polite" style="display:grid;gap:10px;margin:14px 0"></div>
@@ -251,7 +251,15 @@ $("partnerAIConfirm").addEventListener("click",async()=>{
    fileInput.value="";
   }
   const success=submitted.updated?(lang==="ru"?"Черновик существующей заявки обновлён и отправлен на проверку.":lang==="en"?"Your existing draft was updated and submitted for review.":"Գործող հայտի տվյալները թարմացվել և ուղարկվել են ստուգման։"):(lang==="ru"?"Заявка отправлена. Компания останется скрытой до проверки администратором.":lang==="en"?"Application submitted. Your business will remain unpublished until admin review.":"Հայտն ուղարկվել է։ Բիզնեսը չի հրապարակվի մինչև ադմինիստրատորի ստուգումը։");
-  aiBubble("assistant",success);status.textContent=success;button.classList.add("hidden");status.scrollIntoView({behavior:"smooth",block:"center"});
+  status.textContent=success;
+  button.classList.add("hidden");
+  $("partnerAIReview").classList.add("hidden");
+  $("partnerAIEdit").classList.add("hidden");
+  $("partnerAIInput").disabled=true;
+  $("partnerAISend").disabled=true;
+  $("partnerAIBusinessDoc").disabled=true;
+  $("partnerAIStatus").classList.remove("hidden");
+  status.scrollIntoView({behavior:"smooth",block:"center"});
  }catch(e){status.textContent=(lang==="ru"?"Не удалось отправить заявку: ":lang==="en"?"Could not submit the application: ":"Չհաջողվեց ուղարկել հայտը՝ ")+(e?.message||"unknown_error");button.disabled=false;status.scrollIntoView({behavior:"smooth",block:"center"});}
 });
 
