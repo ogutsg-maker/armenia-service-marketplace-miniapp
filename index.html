@@ -665,6 +665,26 @@ async function loadAdminCompanies(){
     serviceSection.append(serviceCard);
    }
    card.append(serviceSection);
+   const actions=document.createElement("div");actions.className="admin-actions";
+   const frozen=c.lifecycle==="inactive";
+   const freezeBtn=document.createElement("button");freezeBtn.type="button";
+   freezeBtn.textContent=frozen?({hy:"Վերականգնել",ru:"Разморозить",en:"Unfreeze"}[lang]):({hy:"Սառեցնել",ru:"Заморозить",en:"Freeze"}[lang]);
+   freezeBtn.disabled=c.review_status!=="approved";
+   freezeBtn.addEventListener("click",async()=>{
+    const msg=frozen?({hy:"Վերականգնե՞լ ընկերությունը։",ru:"Разморозить компанию?",en:"Unfreeze this company?"}[lang]):({hy:"Սառեցնե՞լ ընկերությունը։ Այն կթաքցվի հաճախորդների որոնումից, տվյալները կմնան։",ru:"Заморозить компанию? Она исчезнет из поиска клиентов, данные сохранятся.",en:"Freeze this company? It will disappear from customer search; data will remain."}[lang]);
+    if(!confirm(msg))return;
+    try{await adminCall("company-freeze","POST",{company_id:c.id,frozen:!frozen,reason:frozen?"Restored by administrator":"Frozen by administrator"});await loadAdminCompanies();}
+    catch(e){status.textContent=String(e.message||e);}
+   });
+   actions.append(freezeBtn);
+   const archiveBtn=document.createElement("button");archiveBtn.type="button";archiveBtn.textContent=({hy:"Արխիվացնել",ru:"Убрать из списка",en:"Archive"}[lang]);
+   archiveBtn.addEventListener("click",async()=>{
+    const msg=({hy:"Արխիվացնե՞լ ընկերությունը։ Տվյալներն ու պատմությունը կպահպանվեն։",ru:"Архивировать компанию? Данные и история сохранятся.",en:"Archive this company? Data and history will be preserved."}[lang]);
+    if(!confirm(msg))return;
+    try{await adminCall("company-archive","POST",{company_id:c.id,reason:"Archived by administrator"});await loadAdminCompanies();}
+    catch(e){status.textContent=String(e.message||e);}
+   });
+   actions.append(archiveBtn);card.append(actions);
    list.append(card);
   }
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
