@@ -610,7 +610,7 @@ async function loadPartnerCompanies(){
    const addr=document.createElement("p");addr.textContent=[c.marz,c.city,c.village,c.district,c.address].filter(Boolean).join(" · ");card.append(addr);
    if(c.description){const desc=document.createElement("p");desc.textContent=c.description;card.append(desc);}
    const svcTitle=document.createElement("strong");svcTitle.textContent=({hy:"Ծառայություններ",ru:"Услуги",en:"Services"}[lang]||"Services");card.append(svcTitle);
-   const services=Array.isArray(c.services)?c.services:[];
+   const servicesRaw=Array.isArray(c.services)?c.services:[];const seenServiceIds=new Set();const seenServiceKeys=new Set();const services=servicesRaw.filter(service=>{const id=String(service.id||"");const key=[String(service.name||"").trim().toLocaleLowerCase(),String(service.description||"").trim().toLocaleLowerCase(),String(service.price_type||""),String(service.price_amount??"")].join("|");if((id&&seenServiceIds.has(id))||(!id&&seenServiceKeys.has(key)))return false;if(id)seenServiceIds.add(id);seenServiceKeys.add(key);return true;});
    if(!services.length){const empty=document.createElement("p");empty.className="admin-meta";empty.textContent=({hy:"Ծառայություններ դեռ ավելացված չեն։",ru:"Услуги пока не добавлены.",en:"No services added yet."}[lang]||"No services yet.");card.append(empty);}
    for(const service of services){const row=document.createElement("p");row.className="admin-meta";row.textContent=service.name+" · "+(service.active?({hy:"Ակտիվ",ru:"Активна",en:"Active"}[lang]||"Active"):({hy:"Անջատված",ru:"Неактивна",en:"Inactive"}[lang]||"Inactive"));card.append(row);}
    list.append(card);
