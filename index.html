@@ -406,7 +406,10 @@ async function loadAdminApplications(){
    }));
    editForm.append(adminButton(lang==="ru"?"Отмена":lang==="en"?"Cancel":"Չեղարկել","secondary",()=>editForm.classList.add("hidden")));card.append(editForm);
    const actions=document.createElement("div");actions.className="admin-actions";
-   actions.append(adminButton(adminText("approveCompany"),"",async()=>{if(reason.value.trim().length<3){$("adminStatus").textContent=adminText("reasonRequired");return;}await runAdminReview(()=>adminCall("company-review","POST",{company_id:company.id,decision:"approved",reason:reason.value.trim()}));}));
+   actions.append(adminButton(adminText("approveCompany"),"",async()=>{
+    const approvalReason=reason.value.trim()||(lang==="ru"?"Компания одобрена администратором после проверки регистрационного документа.":lang==="en"?"Company approved by administrator after registration document review.":"Ընկերությունը հաստատվել է ադմինիստրատորի կողմից՝ գրանցման փաստաթղթի ստուգումից հետո։");
+    await runAdminReview(()=>adminCall("company-review","POST",{company_id:company.id,decision:"approved",reason:approvalReason}),lang==="ru"?"Компания одобрена и активирована.":lang==="en"?"Company approved and activated.":"Ընկերությունը հաստատվել և ակտիվացվել է։");
+   }));
    actions.append(adminButton(adminText("changes"),"secondary",async()=>{if(reason.value.trim().length<3){$("adminStatus").textContent=adminText("reasonRequired");return;}await runAdminReview(()=>adminCall("company-review","POST",{company_id:company.id,decision:"changes_requested",reason:reason.value.trim()}));}));
    actions.append(adminButton(adminText("rejectCompany"),"danger",async()=>{if(reason.value.trim().length<3){$("adminStatus").textContent=adminText("reasonRequired");return;}await runAdminReview(()=>adminCall("company-review","POST",{company_id:company.id,decision:"rejected",reason:reason.value.trim()}));}));
    actions.append(adminButton(lang==="ru"?"Удалить (архивировать)":lang==="en"?"Remove (archive)":"Հեռացնել (արխիվացնել)","danger",async()=>{
@@ -451,7 +454,7 @@ async function loadAdminApplications(){
   }
  }catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}
 }
-async function runAdminReview(action){try{await action();await loadAdminApplications();}catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}}
+async function runAdminReview(action,successMessage){try{await action();await loadAdminApplications();if(successMessage)$("adminStatus").textContent=successMessage;}catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}}
 
 const CABINET_ROOMS={
 client:[
