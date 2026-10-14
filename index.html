@@ -79,7 +79,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 
 <section class="panel hidden" id="partnerAIPanel">
  <div class="label" id="partnerAIHeading">AI-оператор регистрации бизнеса</div>
- <p class="notice" id="partnerAIIntro">Укажите название бизнеса, опишите деятельность и адрес. Документ о регистрации можно приложить сразу; он будет прикреплён к заявке после её создания.</p>
+ <p class="notice" id="partnerAIIntro">Գրեք տվյալները AI օգնականին․ ձեր պատասխանները կպահպանվեն, իսկ հայտի ամփոփումը կցուցադրվի այստեղ։</p>
  <div id="partnerAIStatus" class="notice" role="status" aria-live="polite"></div>
  <button class="back-button" id="partnerAIVerifyPhone" type="button">Подтвердить телефон через Telegram</button><div id="partnerAIPhoneMessage" class="notice" role="status" aria-live="polite"></div>
  <div id="partnerAIChat" aria-live="polite" style="display:grid;gap:10px;margin:14px 0"></div>
@@ -90,7 +90,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
  <div id="partnerAIReview" class="cabinet-room-content hidden"></div>
  <button class="action hidden" id="partnerAIConfirm" type="button">Подтвердить и отправить заявку</button>
  <button class="back-button" id="partnerAIEdit" type="button">Продолжить диалог / исправить данные</button>
- <div class="notice" id="partnerAINote">Սեփականատիրոջ պրոֆիլի տվյալները կրկին մուտքագրելու կարիք չկա։ Լրացրեք բիզնեսի անվանումը, նկարագրությունը, հասցեն և կցեք փաստաթուղթը։ Փաստաթուղթը մասնավոր կերպով կվերբեռնվի հայտի ստեղծումից հետո։</div>
+ 
 </section>
 <section class="panel hidden" id="partnerPanel">
 <div class="label">Գրանցվել որպես գործընկեր / Регистрация партнёра / Partner registration</div>
@@ -217,7 +217,7 @@ async function sendPartnerAI(){
   if(d.fields?.adult_confirmed===true)$("partnerAdult").checked=true;
   if(d.fields?.phone_e164 && !d.fields.phone_verified){/* a phone is only accepted by the registration API after Telegram verification */}
   partnerAIHistory.push({role:"assistant",content:answer});aiBubble("assistant",answer);
-  $("partnerAIStatus").textContent="";if(d.ready){renderPartnerAIReview();}else $("partnerAIReview").classList.add("hidden");
+  $("partnerAIStatus").textContent="";renderPartnerAIReview();
  }catch(e){const code=e?.aiCode||e?.message||"ai_unavailable";const detail=e?.aiDetail||"";const labels={ai_provider_not_configured:"Supabase не видит секрет GROQ_API_KEY. Проверьте, что секрет сохранён именно в проекте ljihvqglrmojhxqlldbr и называется GROQ_API_KEY.",ai_provider_error:"Groq отклонил запрос. Проверьте API key, доступ к модели и лимит Groq.",ai_rate_limited:"Превышен лимит Groq (429). Попробуйте позже.",telegram_auth_invalid:"Telegram не передал действительные данные авторизации. Закройте Mini App и откройте заново из бота.",profile_not_found:"Не найдена запись профиля пользователя в базе данных.",profile_lookup_failed:"Не удалось прочитать профиль пользователя из Supabase.",ai_response_invalid:"Groq вернул ответ в неподдерживаемом формате."};$("partnerAIStatus").textContent=(labels[code]||"AI недоступен. Код: "+String(code).slice(0,80))+(detail?" Детали: "+detail:"");}
  finally{$("partnerAISend").disabled=false;input.focus();}
 }
