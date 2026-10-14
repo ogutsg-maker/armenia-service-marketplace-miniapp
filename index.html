@@ -445,9 +445,14 @@ async function loadAdminApplications(){
    editActions.append(adminButton(adminText("cancel"),"secondary",()=>{editPanel.hidden=true;}));editPanel.append(editActions);
    tools.append(adminButton(adminText("edit"),"secondary",()=>{editPanel.hidden=!editPanel.hidden;}));
    tools.append(adminButton(adminText("delete"),"danger",async()=>{
-    if(!confirm(adminText("deleteConfirm")))return;const reason=prompt(adminText("deleteReason"));
+    if(!confirm(adminText("deleteConfirm")))return;
+    const expectedName=company.display_name||company.legal_name||"";
+    const typed=prompt(({hy:"Վերջնական ջնջման համար մուտքագրեք ընկերության ճշգրիտ անունը՝ ",ru:"Для окончательного удаления введите точное название компании: ",en:"Type the exact company name to permanently delete: "}[lang]||"Type the exact company name: ")+expectedName);
+    if(typed===null)return;
+    if(typed.trim()!==expectedName){$("adminStatus").textContent=({hy:"Անունը չի համընկնում։",ru:"Название не совпадает.",en:"Company name does not match."}[lang]);return;}
+    const reason=prompt(adminText("deleteReason"));
     if(!reason||reason.trim().length<3){$("adminStatus").textContent=adminText("reasonRequired");return;}
-    try{await adminCall("company-delete","POST",{company_id:company.id,reason:reason.trim()});await loadAdminApplications();}
+    try{await adminCall("company-delete","POST",{company_id:company.id,expected_name:typed.trim(),reason:reason.trim()});await loadAdminApplications();}
     catch(e){$("adminStatus").textContent=adminText("error")+" "+String(e.message||"");}
    }));
    card.append(tools,editPanel);$("adminApplications").append(card);
@@ -684,7 +689,28 @@ async function loadAdminCompanies(){
     try{await adminCall("company-archive","POST",{company_id:c.id,reason:"Archived by administrator"});await loadAdminCompanies();}
     catch(e){status.textContent=String(e.message||e);}
    });
-   actions.append(archiveBtn);card.append(actions);
+   actions.append(archiveBtn);
+   const deleteBtn=document.createElement("button");deleteBtn.type="button";
+   deleteBtn.textContent=({hy:"Վերջնական ջնջել",ru:"Удалить навсегда",en:"Delete permanently"}[lang]);
+   deleteBtn.style.cssText="border:1px solid #a64d45;background:#492522;color:#ffe5e1";
+   deleteBtn.addEventListener("click",async()=>{
+    const displayName=c.display_name||c.legal_name||"";
+    const promptText=({hy:"Վերջնական ջնջումը չի վերադարձվում։ Եթե ընկերությունն ունի պատվերների, ֆինանսական կամ հայտերի պատմություն, ջնջումը կարգելափակվի։\n\nՇարունակելու համար մուտքագրեք ընկերության ճշգրիտ անունը՝",ru:"Удаление необратимо. Если у компании есть заказы, финансовая история или история заявок, система запретит удаление.\n\nДля подтверждения введите точное название компании:",en:"Permanent deletion cannot be undone. Companies with bookings, financial records, or request history cannot be deleted.\n\nType the exact company name to confirm:"}[lang]);
+    const typed=prompt(promptText);
+    if(typed===null)return;
+    if(typed.trim()!==displayName){alert(({hy:"Անունը չի համընկնում։",ru:"Название не совпадает.",en:"The name does not match."}[lang]));return;}
+    try{
+     deleteBtn.disabled=true;
+     await adminCall("company-delete","POST",{company_id:c.id,expected_name:typed.trim(),reason:"Permanently deleted by administrator after exact-name confirmation"});
+     await loadAdminCompanies();
+    }catch(e){
+     const code=String(e.message||e);
+     if(code.includes("company_has_history_archive_instead"))alert(({hy:"Ընկերությունն ունի պատվերների, ֆինանսական կամ հայտերի պատմություն։ Վերջնական ջնջումը արգելված է. օգտագործեք արխիվացումը։",ru:"У компании есть заказы, финансовая история или история заявок. Физическое удаление запрещено — используйте архивирование.",en:"This company has bookings, financial records, or request history. Permanent deletion is blocked; archive it instead."}[lang]));
+     else alert(({hy:"Չհաջողվեց ջնջել ընկերությունը։",ru:"Не удалось удалить компанию: ",en:"Could not delete company: "}[lang])+code);
+     deleteBtn.disabled=false;
+    }
+   });
+   actions.append(deleteBtn);card.append(actions);
    list.append(card);
   }
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
