@@ -42,7 +42,8 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
 <section class="panel hidden" id="adminPanel"><h2 class="admin-heading" id="adminTitle">Панель администратора</h2><p class="admin-status" id="adminStatus" role="status" aria-live="polite">Загрузка…</p><div id="adminApplications"></div></section>
 <button id="backButton" class="back-button hidden" type="button">‹ <span id="backLabel">Գլխավոր էջ</span></button>
 <nav id="cabinetNav" class="cabinet-nav hidden" aria-label="Cabinet navigation"><button id="switchRoleButton" type="button">Switch role</button><button id="openProfileButton" type="button">Profile</button><button id="openBusinessButton" type="button" class="hidden">Business registration</button><button id="openServicesButton" type="button" class="hidden">My services</button></nav>
-<section class="panel hidden" id="cabinetHome"><h2 id="cabinetHeading" class="admin-heading">Personal cabinet</h2><p id="cabinetIntro" class="notice"></p><div id="cabinetSummary" class="cabinet-card"><div><strong id="cabinetSummaryTitle">Next step</strong><p id="cabinetSummaryText"></p></div></div><button class="action hidden" id="cabinetPrimaryAction" type="button"></button><div id="cabinetExtra" class="notice"></div><div id="cabinetRooms" class="room-grid" aria-label="Cabinet sections"></div><div id="cabinetRoomContent" class="cabinet-room-content hidden" aria-live="polite"></div></section>
+<section class="panel hidden" id="cabinetHome"><h2 id="cabinetHeading" class="admin-heading">Personal cabinet</h2><p id="cabinetIntro" class="notice"></p><div id="cabinetSummary" class="cabinet-card"><div><strong id="cabinetSummaryTitle">Next step</strong><p id="cabinetSummaryText"></p></div></div><button class="action hidden" id="cabinetPrimaryAction" type="button"></button><div id="cabinetExtra" class="notice"></div>
+<div class="panel" id="cabinetAccountSafety" style="margin-top:16px"><h3 id="cabinetAccountSafetyTitle">Управление аккаунтом</h3><p class="notice" id="cabinetAccountSafetyDescription">Вы можете подать заявку на удаление личного профиля. Заявку рассматривает администратор; двухлетний срок начинается только после одобрения.</p><button class="back-button" id="requestAccountDeletionCabinetButton" type="button">Запросить удаление профиля</button><p class="notice" id="cabinetAccountDeletionStatus" role="status" aria-live="polite"></p></div><div id="cabinetRooms" class="room-grid" aria-label="Cabinet sections"></div><div id="cabinetRoomContent" class="cabinet-room-content hidden" aria-live="polite"></div></section>
 <section class="panel hidden" id="profilePanel">
 <div class="status" id="authStatus">Telegram-ի նույնականացում</div>
 <h2 id="profileFormTitle">Профиль владельца</h2>
@@ -780,7 +781,7 @@ function renderCabinet(role){
  $("cabinetHeading").textContent=role==="client"?t.clientTitle:t.partnerTitle;$("cabinetIntro").textContent=role==="client"?t.clientIntro:t.partnerIntro;
  $("switchRoleButton").textContent=t.switch;$("openProfileButton").textContent=t.profile;$("openBusinessButton").textContent=t.business;$("openServicesButton").textContent=t.services;
  $("cabinetSummaryTitle").textContent=t.next;$("cabinetSummaryText").textContent=role==="client"?t.clientNext:t.partnerNext;$("cabinetExtra").textContent=role==="partner"?t.extra:"";
- $("cabinetPrimaryAction").classList.toggle("hidden",role!=="partner");$("cabinetPrimaryAction").textContent=t.register;$("footer").classList.remove("hidden");renderRoomGrid(role);window.scrollTo({top:0,behavior:"auto"});
+ $("cabinetPrimaryAction").classList.toggle("hidden",role!=="partner");$("cabinetPrimaryAction").textContent=t.register;$("footer").classList.remove("hidden");renderRoomGrid(role);loadCabinetAccountDeletionStatus();window.scrollTo({top:0,behavior:"auto"});
 }
 // New partner sessions always start with the owner profile, never with business registration.
 
@@ -856,6 +857,37 @@ async function loadAccountDeletionStatus(){
   else box.textContent="";
  }catch(e){box.textContent=String(e.message||e);}
 }
+async function requestAccountDeletionFromUI(button,statusBox){
+ if(!initData){statusBox.textContent=I18N[lang].missing;return;}
+ const reason=prompt(({hy:"Նշեք հաշիվը հեռացնելու պատճառը",ru:"Укажите причину удаления профиля",en:"Why do you want to delete your profile?"}[lang]));
+ if(reason===null)return;
+ if(reason.trim().length<3){statusBox.textContent=({hy:"Պատճառը պետք է լինի առնվազն 3 նիշ։",ru:"Причина должна содержать минимум 3 символа.",en:"Reason must be at least 3 characters."}[lang]);return;}
+ button.disabled=true;
+ try{
+  const sr=await market("/account-deletion-status"),sd=await sr.json().catch(()=>({}));
+  if(!sr.ok)throw new Error(sd.error||("HTTP "+sr.status));
+  if((sd.requests||[]).some(x=>["pending","approved"].includes(x.status))){statusBox.textContent=({hy:"Արդեն կա սպասող կամ հաստատված հայտ։",ru:"Заявка уже отправлена или одобрена.",en:"A request is already pending or approved."}[lang]);return;}
+  const r=await market("/account-deletion-request",{method:"POST",body:JSON.stringify({reason:reason.trim()})});
+  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
+  statusBox.textContent=({hy:"Հայտն ուղարկվել է ադմինիստրատորին։ Երկու տարվա ժամկետը կսկսվի միայն հաստատումից հետո։",ru:"Заявка отправлена администратору. Двухлетний срок начнётся только после одобрения.",en:"Request sent to the administrator. The two-year period starts only after approval."}[lang]);
+ }catch(e){statusBox.textContent=String(e.message||e);}
+ finally{button.disabled=false;await loadCabinetAccountDeletionStatus();}
+}
+async function loadCabinetAccountDeletionStatus(){
+ const box=$("cabinetAccountDeletionStatus"),button=$("requestAccountDeletionCabinetButton");if(!box||!button)return;
+ if(!initData){button.disabled=true;box.textContent=I18N[lang].missing;return;}
+ try{
+  const r=await market("/account-deletion-status"),d=await r.json();if(!r.ok)throw new Error(d.error||"status_unavailable");
+  const items=Array.isArray(d.requests)?d.requests:[],active=items.find(x=>["pending","approved"].includes(x.status));
+  button.disabled=!!active||["deletion_pending","soft_deleted"].includes(d.account_status);
+  if(active?.status==="pending")box.textContent=({hy:"Հայտը սպասում է ադմինիստրատորի որոշմանը։",ru:"Заявка ожидает решения администратора.",en:"Your request is awaiting administrator review."}[lang]);
+  else if(active?.status==="approved")box.textContent=({hy:"Հաստատված է։ Վերջնական հեռացումը նախատեսված է՝ ",ru:"Одобрено. Окончательное удаление запланировано на ",en:"Approved. Final deletion is scheduled for "}[lang])+new Date(active.scheduled_for).toLocaleString();
+  else if(items[0]?.status==="rejected")box.textContent=({hy:"Նախորդ հայտը մերժվել է։ Կարող եք ուղարկել նոր հայտ։",ru:"Предыдущая заявка отклонена. Вы можете отправить новую.",en:"Your previous request was rejected. You may submit another."}[lang]);
+  else if(d.account_status==="frozen")box.textContent=({hy:"Հաշիվը սառեցված է։",ru:"Аккаунт заморожен.",en:"Account is frozen."}[lang]);
+  else box.textContent="";
+ }catch(e){box.textContent=String(e.message||e);}
+}
+$("requestAccountDeletionCabinetButton").addEventListener("click",()=>requestAccountDeletionFromUI($("requestAccountDeletionCabinetButton"),$("cabinetAccountDeletionStatus")));
 $("requestAccountDeletionButton").addEventListener("click",async()=>{
  if(!initData){$("accountDeletionStatus").textContent=I18N[lang].missing;return;}
  const promptText=({hy:"Նշեք հաշիվը հեռացնելու պատճառը",ru:"Укажите причину удаления аккаунта",en:"Why do you want to delete your account?"}[lang]);
