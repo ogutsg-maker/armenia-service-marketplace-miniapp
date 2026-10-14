@@ -563,7 +563,7 @@ function openCabinetRoom(role,id){
  if(role==="client"&&id==="requests"){$("cabinetRoomContent").classList.add("hidden");$("requestPanel").classList.remove("hidden");return;}
  if(id==="profile"){openOwnerProfile();return;}
  if(role==="partner"&&id==="companies"){$("cabinetRoomContent").classList.add("hidden");loadPartnerCompanies();return;}
- if(role==="partner"&&id==="services"){$("cabinetHome").classList.remove("hidden");$("cabinetRooms").classList.add("hidden");$("cabinetRoomContent").classList.remove("hidden");loadPartnerServices();return;}
+ if(role==="partner"&&id==="services"){openPartnerServices();return;}
  if(role==="partner"&&id==="documents"){$("cabinetRoomContent").classList.add("hidden");openBusinessRegistration();$("partnerPanel").scrollIntoView({behavior:"smooth",block:"start"});return;}
  if(role==="partner"){appendPartnerRoomDetails($("cabinetRoomContent"),id);return;}
  const hint=document.createElement("p");hint.className="room-placeholder";hint.textContent=({hy:"Կառուցվածքը պատրաստ է։ Իրական տվյալներն ու գործողությունները կմիանան հաջորդ փուլում։ Տվյալների բազան չենք փոխում։",ru:"Каркас комнаты готов. Реальные данные и действия подключим следующим этапом. Базу данных не меняем.",en:"The room shell is ready. Real data and actions will be connected in a later stage. The database will not be changed."}[lang]||"Room shell ready; database unchanged.");$("cabinetRoomContent").append(hint);
