@@ -86,6 +86,8 @@ footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
  <textarea id="partnerAIInput" maxlength="4000" placeholder="Название бизнеса, описание деятельности и адрес…" style="min-height:90px"></textarea>
  <label class="notice" id="partnerAIDocumentLabel" for="partnerAIBusinessDoc">Գրանցման փաստաթուղթ (PDF/JPG/PNG, մինչև 3 ՄԲ, կարելի է կցել հիմա)</label>
  <input id="partnerAIBusinessDoc" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-label="Գրանցման փաստաթուղթ">
+ <button class="back-button" id="partnerAIBusinessDocUpload" type="button">Վերբեռնել փաստաթուղթը / Загрузить документ / Upload document</button>
+ <div id="partnerAIBusinessDocStatus" class="notice" role="status" aria-live="polite"></div>
  <button class="action" id="partnerAISend" type="button">Отправить AI</button>
  <div id="partnerAIReview" class="cabinet-room-content hidden"></div>
  <button class="action hidden" id="partnerAIConfirm" type="button">Подтвердить и отправить заявку</button>
@@ -174,6 +176,29 @@ async function requestPhoneVerification(){
  }catch(e){box.textContent=e.message==="could_not_message_user_start_bot_first"?"Сначала откройте Telegram-бота и нажмите Start.":lang==="ru"?"Не удалось отправить запрос подтверждения.":lang==="en"?"Could not start phone verification.":"Չհաջողվեց սկսել հեռախոսի հաստատումը։";}
 }
 $("verifyPhoneButton").addEventListener("click",requestPhoneVerification);
+async function uploadBusinessRegistrationDocument(){
+ const input=$("partnerAIBusinessDoc"),file=input.files&&input.files[0],box=$("partnerAIBusinessDocStatus");
+ const messages={
+  choose:{hy:"Ընտրեք PDF, JPG կամ PNG փաստաթուղթը։",ru:"Сначала выберите PDF, JPG или PNG.",en:"Choose a PDF, JPG, or PNG file first."},
+  size:{hy:"Ֆայլի առավելագույն չափը 3 ՄԲ է։",ru:"Максимальный размер файла — 3 МБ.",en:"Maximum file size is 3 MB."},
+  uploading:{hy:"Փաստաթուղթը վերբեռնվում է…",ru:"Загружаю документ…",en:"Uploading document…"},
+  success:{hy:"Փաստաթուղթը մասնավոր կերպով վերբեռնվեց և սպասում է ստուգման։",ru:"Документ загружен в приватное хранилище и ожидает проверки.",en:"Document uploaded privately and is awaiting review."},
+  failed:{hy:"Չհաջողվեց վերբեռնել փաստաթուղթը։",ru:"Не удалось загрузить документ.",en:"Could not upload the document."},
+  missing:{hy:"Նախ ստեղծեք բիզնեսի հայտը, ապա վերբեռնեք փաստաթուղթը։",ru:"Сначала создайте заявку компании, затем загрузите документ.",en:"Create the business application first, then upload the document."}
+ };
+ if(!file){box.textContent=messages.choose[lang]||messages.choose.hy;return;}
+ if(file.size>3*1024*1024){box.textContent=messages.size[lang]||messages.size.hy;return;}
+ const form=new FormData();form.append("file",file);form.append("document_type","company_register");
+ box.textContent=messages.uploading[lang]||messages.uploading.hy;
+ try{
+  const response=await market("/partner-documents",{method:"POST",body:form});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){if(data.error==="partner_application_required")throw new Error("partner_application_required");throw new Error(data.error||"upload_failed");}
+  box.textContent=messages.success[lang]||messages.success.hy;input.value="";
+ }catch(e){box.textContent=e.message==="partner_application_required"?(messages.missing[lang]||messages.missing.hy):(messages.failed[lang]||messages.failed.hy)+" "+String(e.message||"");}
+}
+$("partnerAIBusinessDocUpload").addEventListener("click",uploadBusinessRegistrationDocument);
+
 async function uploadPartnerDocument(inputId,type){
  const box=$("partnerUploadMessage"),input=$(inputId),file=input.files&&input.files[0];
  if(!file){box.textContent="Choose a PDF, JPG, or PNG file first.";return;}
@@ -347,7 +372,14 @@ async function loadAdminApplications(){
    if(!docs.length){const none=document.createElement("p");none.className="admin-meta";none.textContent=adminText("noDocument");card.append(none);}
    for(const doc of docs){
     const box=document.createElement("div");box.className="admin-doc";const label=document.createElement("div");label.textContent=[doc.document_type,doc.review_status,Math.ceil((doc.size_bytes||0)/1024)+" KB"].filter(Boolean).join(" · ");box.append(label);
-    if(doc.signed_url){const link=document.createElement("a");link.href=doc.signed_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=adminText("open");box.append(link);}
+    if(doc.signed_url){
+     const link=document.createElement("a");link.href=doc.signed_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=adminText("open");link.style.display="inline-block";link.style.marginTop="8px";box.append(link);
+     if(doc.mime_type==="application/pdf"){
+      const preview=document.createElement("iframe");preview.src=doc.signed_url;preview.title=adminText("open");preview.loading="lazy";preview.style.width="100%";preview.style.height="440px";preview.style.border="1px solid var(--line)";preview.style.borderRadius="8px";preview.style.marginTop="10px";box.append(preview);
+     }else if(doc.mime_type==="image/jpeg"||doc.mime_type==="image/png"){
+      const preview=document.createElement("img");preview.src=doc.signed_url;preview.alt=adminText("open");preview.loading="lazy";preview.style.display="block";preview.style.maxWidth="100%";preview.style.maxHeight="560px";preview.style.objectFit="contain";preview.style.marginTop="10px";preview.style.borderRadius="8px";box.append(preview);
+     }
+    }
     else{const no=document.createElement("div");no.className="admin-meta";no.textContent=lang==="ru"?"Ссылка на документ недоступна.":lang==="en"?"Document preview unavailable.":"Փաստաթղթի դիտման հղումը հասանելի չէ։";box.append(no);}
     if(doc.review_status==="pending"){
      const da=document.createElement("div");da.className="admin-actions";
