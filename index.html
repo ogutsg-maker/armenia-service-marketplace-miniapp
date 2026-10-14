@@ -227,28 +227,67 @@ $("partnerAIVerifyPhone").addEventListener("click",async()=>{await requestPhoneV
 $("partnerAIInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendPartnerAI();}});
 $("partnerAIEdit").addEventListener("click",()=>{$("partnerAIReview").classList.add("hidden");$("partnerAIConfirm").classList.add("hidden");$("partnerAIInput").focus();});
 $("partnerAIConfirm").addEventListener("click",async()=>{
- if(!partnerAIReady)return;const selectedFile=$("partnerAIBusinessDoc").files&&$("partnerAIBusinessDoc").files[0];if(selectedFile&&selectedFile.size>3*1024*1024){$("partnerAIStatus").textContent=aiText("size");return;}
+ if(!partnerAIReady)return;
+ const button=$("partnerAIConfirm"),status=$("partnerAIStatus");
+ const selectedFile=$("partnerAIBusinessDoc").files&&$("partnerAIBusinessDoc").files[0];
+ if(selectedFile&&selectedFile.size>3*1024*1024){status.textContent=aiText("size");status.scrollIntoView({behavior:"smooth",block:"center"});return;}
  const map={partnerFirstName:"first_name",partnerLastName:"last_name",partnerPhone:"phone_e164",partnerEmail:"email",partnerBirthDate:"birth_date",partnerDisplayName:"display_name",partnerLegalName:"legal_name",partnerCompanyPhone:"company_phone_e164",partnerDescription:"description",partnerMarz:"marz",partnerCity:"city",partnerVillage:"village",partnerDistrict:"district",partnerAddress:"address"};
  for(const [id,k] of Object.entries(map))$(id).value=String((k==="first_name"?currentProfile?.first_name:k==="last_name"?currentProfile?.last_name:k==="phone_e164"?currentProfile?.phone_e164:k==="birth_date"?currentProfile?.birth_date:partnerAIFields[k])||"");
  if(profileComplete())$("partnerAdult").checked=true;
- $("partnerCompanyType").value=partnerAIFields.company_type||"individual";$("partnerLegalName").value=partnerAIFields.company_type==="legal_entity"?(partnerAIFields.legal_name||""):String(partnerAIFields.display_name||"");
+ $("partnerCompanyType").value=partnerAIFields.company_type||"individual";
+ $("partnerLegalName").value=partnerAIFields.company_type==="legal_entity"?(partnerAIFields.legal_name||""):String(partnerAIFields.display_name||"");
  if(partnerAIFields.adult_confirmed===true)$("partnerAdult").checked=true;
- if(!$("partnerPhone").value){$("partnerAIStatus").textContent=lang==="ru"?"Сначала подтвердите телефон через Telegram.":"Verify your phone through Telegram first.";return;}
- $("partnerAIStatus").textContent=aiText("thinking");$("partnerAIConfirm").disabled=true;
- try{await submitPartnerApplication();const result=$("partnerMessage").textContent;if(/создана|created|ստեղծվեց/i.test(result)){const fileInput=$("partnerAIBusinessDoc"),file=fileInput.files&&fileInput.files[0];if(file){if(file.size>3*1024*1024){$("partnerAIStatus").textContent=aiText("size");return;}const form=new FormData();form.append("file",file);form.append("document_type","company_register");$("partnerAIStatus").textContent=aiText("uploading");const ur=await market("/partner-documents",{method:"POST",body:form});const ud=await ur.json().catch(()=>({}));if(!ur.ok){$("partnerAIStatus").textContent=aiText("uploadFailed")+(ud.error||"upload_failed");return;}fileInput.value="";}aiBubble("assistant",lang==="ru"?"Заявка создана. Компания останется скрытой до проверки администратором.":lang==="en"?"Application created. The business stays unpublished until admin review.":"Հայտը ստեղծվեց։ Բիզնեսը չի հրապարակվի մինչև ադմինիստրատորի ստուգումը։");$("partnerAIStatus").textContent=file?aiText("uploaded"):aiText("submitted");}else{$("partnerAIStatus").textContent=result;$("partnerAIConfirm").disabled=false;}}
- catch{$("partnerAIStatus").textContent=aiText("error");$("partnerAIConfirm").disabled=false;}
+ button.disabled=true;status.textContent=lang==="ru"?"Отправляю заявку…":lang==="en"?"Submitting application…":"Հայտն ուղարկվում է…";
+ try{
+  const submitted=await submitPartnerApplication();
+  if(!submitted||!submitted.ok){status.textContent=submitted?.message||aiText("error");button.disabled=false;status.scrollIntoView({behavior:"smooth",block:"center"});return;}
+  const fileInput=$("partnerAIBusinessDoc"),file=fileInput.files&&fileInput.files[0];
+  if(file){
+   if(file.size>3*1024*1024){status.textContent=aiText("size");button.disabled=false;return;}
+   const form=new FormData();form.append("file",file);form.append("document_type","company_register");
+   status.textContent=aiText("uploading");
+   const ur=await market("/partner-documents",{method:"POST",body:form});const ud=await ur.json().catch(()=>({}));
+   if(!ur.ok){status.textContent=(lang==="ru"?"Заявка сохранена, но документ не загружен: ":lang==="en"?"Application saved, but document upload failed: ":"Հայտը պահպանվեց, սակայն փաստաթուղթը չվերբեռնվեց՝ ")+(ud.error||"upload_failed");button.disabled=false;status.scrollIntoView({behavior:"smooth",block:"center"});return;}
+   fileInput.value="";
+  }
+  const success=submitted.updated?(lang==="ru"?"Черновик существующей заявки обновлён и отправлен на проверку.":lang==="en"?"Your existing draft was updated and submitted for review.":"Գործող հայտի տվյալները թարմացվել և ուղարկվել են ստուգման։"):(lang==="ru"?"Заявка отправлена. Компания останется скрытой до проверки администратором.":lang==="en"?"Application submitted. Your business will remain unpublished until admin review.":"Հայտն ուղարկվել է։ Բիզնեսը չի հրապարակվի մինչև ադմինիստրատորի ստուգումը։");
+  aiBubble("assistant",success);status.textContent=success;button.classList.add("hidden");status.scrollIntoView({behavior:"smooth",block:"center"});
+ }catch(e){status.textContent=(lang==="ru"?"Не удалось отправить заявку: ":lang==="en"?"Could not submit the application: ":"Չհաջողվեց ուղարկել հայտը՝ ")+(e?.message||"unknown_error");button.disabled=false;status.scrollIntoView({behavior:"smooth",block:"center"});}
 });
 
 async function submitPartnerApplication(){
- const box=$("partnerMessage");if(!initData){box.textContent=I18N[lang].missing;return;}
+ const box=$("partnerMessage");
+ const fail=(message)=>{box.textContent=message;return {ok:false,message};};
+ if(!initData)return fail(I18N[lang].missing);
  const required=["partnerFirstName","partnerDisplayName","partnerPhone","partnerMarz","partnerAddress"];
- for(const id of required){if(!$(id).value.trim()){box.textContent="Please complete the required fields.";return;}}
- if(!$("partnerAdult").checked){box.textContent="Confirm that you are 18 or older.";return;}
+ const labels=lang==="ru"?{partnerFirstName:"имя из профиля",partnerDisplayName:"название бизнеса",partnerPhone:"подтверждённый телефон",partnerMarz:"регион",partnerAddress:"адрес"}:lang==="en"?{partnerFirstName:"profile first name",partnerDisplayName:"business name",partnerPhone:"verified phone",partnerMarz:"region",partnerAddress:"address"}:{partnerFirstName:"անունը պրոֆիլից",partnerDisplayName:"բիզնեսի անվանումը",partnerPhone:"հաստատված հեռախոսը",partnerMarz:"մարզը",partnerAddress:"հասցեն"};
+ const missing=required.filter(id=>!$(id).value.trim());
+ if(missing.length)return fail((lang==="ru"?"Не хватает обязательных данных: ":lang==="en"?"Required information is missing: ":"Բացակայում են պարտադիր տվյալները՝ ")+missing.map(id=>labels[id]).join(", ")+".");
+ if(!$("partnerAdult").checked)return fail(lang==="ru"?"Профиль владельца не подтверждён как совершеннолетний. Проверьте дату рождения в профиле.":lang==="en"?"The owner profile is not verified as an adult. Check the date of birth in your profile.":"Սեփականատիրոջ չափահաս լինելը հաստատված չէ։ Ստուգեք ծննդյան ամսաթիվը պրոֆիլում։");
  const body={first_name:$("partnerFirstName").value.trim(),last_name:$("partnerLastName").value.trim(),phone_e164:$("partnerPhone").value.trim(),email:$("partnerEmail").value.trim(),birth_date:$("partnerBirthDate").value,adult_confirmed:$("partnerAdult").checked,display_name:$("partnerDisplayName").value.trim(),legal_name:$("partnerLegalName").value.trim(),company_type:$("partnerCompanyType").value,company_phone_e164:$("partnerCompanyPhone").value.trim(),description:$("partnerDescription").value.trim(),marz:$("partnerMarz").value.trim(),city:$("partnerCity").value.trim(),village:$("partnerVillage").value.trim(),district:$("partnerDistrict").value.trim(),address:$("partnerAddress").value.trim(),preferred_language:lang};
- box.textContent="…";
- try{const r=await market("/partner-registration",{method:"POST",body:JSON.stringify(body)});const d=await r.json();if(!r.ok){const map={verified_phone_required:"Сначала подтвердите телефон через Telegram.",submitted_phone_must_match_verified_phone:"Укажите именно подтверждённый телефон.",must_be_18:"Регистрация партнёра доступна с 18 лет.",partner_application_already_exists:"Заявка компании уже существует.",required_fields_missing:"Заполните обязательные поля."};throw new Error(map[d.error]||d.error||"request_failed");}
- box.textContent=lang==="ru"?"Заявка создана. Загрузите документы после подключения загрузки; компания не будет опубликована до проверки.":lang==="en"?"Application created. Identity/business document upload is still pending; the company will remain unpublished until review.":"Հայտը ստեղծվեց։ Փաստաթղթերի վերբեռնումը դեռ պետք է միացվի․ ընկերությունը չի հրապարակվի մինչև ստուգումը։";
- }catch(e){box.textContent=e.message||"Request failed.";}
+ box.textContent=lang==="ru"?"Отправляю…":lang==="en"?"Submitting…":"Ուղարկվում է…";
+ try{
+  const r=await market("/partner-registration",{method:"POST",body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));
+  if(!r.ok){
+   const errors={
+    verified_phone_required:["Сначала подтвердите телефон через Telegram.","Verify your phone through Telegram first.","Նախ հաստատեք հեռախոսը Telegram-ի միջոցով։"],
+    submitted_phone_must_match_verified_phone:["Используйте номер, подтверждённый в профиле.","Use the phone number verified in your profile.","Օգտագործեք պրոֆիլում հաստատված հեռախոսահամարը։"],
+    must_be_18:["Регистрация доступна только с 18 лет.","Registration is available only for adults aged 18 or older.","Գրանցումը հասանելի է միայն 18 տարին լրացած անձանց։"],
+    company_already_registered:["У вас уже есть зарегистрированная компания. Откройте раздел «Мои компании» или обратитесь к администратору.","You already have a registered business. Open My Businesses or contact an administrator.","Դուք արդեն ունեք գրանցված բիզնես։ Բացեք «Իմ բիզնեսները» բաժինը կամ դիմեք ադմինիստրատորին։"],
+    partner_application_already_exists:["Заявка уже существует. Обновите страницу и проверьте статус в разделе «Мои компании».","An application already exists. Refresh and check its status under My Businesses.","Հայտն արդեն գոյություն ունի։ Թարմացրեք էջը և ստուգեք կարգավիճակը «Իմ բիզնեսները» բաժնում։"],
+    required_fields_missing:["Проверьте название, описание и адрес бизнеса.","Check the business name, description and address.","Ստուգեք բիզնեսի անվանումը, նկարագրությունը և հասցեն։"],
+    profile_incomplete:["Заполните дату рождения в профиле и сохраните её.","Add your date of birth to your profile and save it.","Լրացրեք ծննդյան ամսաթիվը պրոֆիլում և պահպանեք այն։"],
+    company_application_update_failed:["Не удалось обновить черновик заявки. Повторите попытку.","Could not update the application draft. Please try again.","Չհաջողվեց թարմացնել հայտի նախագիծը։ Կրկին փորձեք։"]
+   };
+   const localized=errors[d.error];const message=localized?localized[lang==="ru"?0:lang==="en"?1:2]:(lang==="ru"?"Ошибка отправки: ":lang==="en"?"Submission failed: ":"Ուղարկման սխալ՝ ")+(d.error||"unknown_error");
+   box.textContent=message;return {ok:false,message,error:d.error};
+  }
+  const message=d.updated?(lang==="ru"?"Существующая заявка обновлена.":lang==="en"?"Existing application updated.":"Գործող հայտը թարմացվել է։"):(lang==="ru"?"Заявка создана.":lang==="en"?"Application created.":"Հայտը ստեղծվել է։");
+  box.textContent=message;return {ok:true,updated:!!d.updated,application:d.application||null,message};
+ }catch(e){
+  const message=lang==="ru"?"Сеть недоступна или сервер не ответил. Проверьте подключение и повторите попытку.":lang==="en"?"The network or server did not respond. Check your connection and try again.":"Ցանցը հասանելի չէ կամ սերվերը չի պատասխանել։ Ստուգեք կապը և կրկին փորձեք։";
+  box.textContent=message;return {ok:false,message};
+ }
 }
 async function submitRequest(){
  const box=$("requestMessage");if(!initData){box.textContent=I18N[lang].missing;return;}
