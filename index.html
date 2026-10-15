@@ -63,6 +63,32 @@ body:has(#adminCabinetPanel:not(.hidden)) footer{color:var(--admin-muted)}
 @media(max-width:850px){body:has(#adminCabinetPanel:not(.hidden)) main{width:min(100% - 24px,700px);padding-top:12px}body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetPanel{grid-template-columns:1fr;padding:8px 0;gap:0}body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetNav{grid-column:1;grid-row:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 16px}body:has(#adminCabinetPanel:not(.hidden)) #adminRoomContent{grid-column:1;grid-row:auto}body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetTitle,body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetIntro{grid-column:1}}
 @media(max-width:420px){body:has(#adminCabinetPanel:not(.hidden)) main{width:calc(100% - 16px)}body:has(#adminCabinetPanel:not(.hidden)) header{padding:11px 12px;align-items:flex-start}body:has(#adminCabinetPanel:not(.hidden)) .brand{font-size:10px;letter-spacing:.07em}body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetNav{grid-template-columns:1fr}body:has(#adminCabinetPanel:not(.hidden)) #adminRoomContent .admin-actions button{flex:1 1 100%}}
 
+
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-toolbar{display:flex;margin:0 0 18px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-search{width:100%;min-width:0;padding:12px 14px;border:1px solid var(--admin-border);border-radius:10px;background:#fff;color:var(--admin-ink);font:inherit;box-sizing:border-box}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-section{margin:0 0 26px;min-width:0}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-section-title{padding-bottom:10px;border-bottom:1px solid var(--admin-border);margin:0 0 12px!important}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid>.admin-company{min-width:0;margin:0!important;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-card[hidden]{display:none!important}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-card .account-admin-detail{margin:0;font-size:12px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-status{display:inline-flex;margin:4px 0;padding:5px 9px;border-radius:7px;background:#eef2f7;color:#475569;font-size:12px;font-weight:750}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-status[data-status="deletion_pending"]{background:#fff1df;color:#99520b}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-status[data-status="active"]{background:var(--admin-green-soft);color:var(--admin-green)}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-badge{display:inline-flex;width:max-content;max-width:100%;padding:5px 9px;border-radius:7px;background:#eef2f7;color:#475569;font-size:12px;font-weight:750}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-badge.status-approved{background:#fff1df;color:#99520b}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-badge.status-rejected{background:#fff0ee;color:#b42318}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-badge.status-cancelled,body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-badge.status-completed{background:var(--admin-green-soft);color:var(--admin-green)}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-reason{margin:6px 0 2px;padding:9px 11px;width:100%;box-sizing:border-box;border-radius:8px;background:#f8fafc;color:#475569;font-size:13px;overflow-wrap:anywhere}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-deadline{margin:2px 0;padding:9px 11px;width:100%;box-sizing:border-box;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:13px;font-weight:700;overflow-wrap:anywhere}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-filters{display:flex;margin:0 0 12px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-admin-filter{width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:9px;background:#fff;color:var(--admin-ink);font:inherit}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-card .admin-actions{display:flex;flex-wrap:wrap;width:100%;gap:8px;margin-top:12px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-card .admin-actions button{flex:1 1 180px;white-space:normal}
+@media(max-width:1050px){body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid{grid-template-columns:1fr}}
+@media(max-width:850px){body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid{grid-template-columns:1fr}body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-card .admin-actions button{flex-basis:100%}}
+
 </style></head>
 <body><main>
 <header><div class="brand">ARMENIA · SERVICE MARKETPLACE</div><nav class="languages" aria-label="Language"><button data-lang="hy" class="active">Հայ</button><button data-lang="ru">RU</button><button data-lang="en">EN</button></nav></header>
@@ -833,34 +859,56 @@ async function loadAdminAccountDeletions(){
  const panel=$("adminRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
  const title=document.createElement("h3");title.textContent=({hy:"Հաշիվների կառավարում",ru:"Управление аккаунтами",en:"Account management"}[lang]);panel.append(title);
  const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]);panel.append(status);
- const list=document.createElement("div");panel.append(list);
+ const list=document.createElement("div");list.className="account-admin-workspace";panel.append(list);
+ const toolbar=document.createElement("div");toolbar.className="account-admin-toolbar";
+ const search=document.createElement("input");search.type="search";search.className="account-admin-search";search.placeholder=({hy:"Որոնել անունով կամ Telegram ID-ով",ru:"Поиск по имени или Telegram ID",en:"Search by name or Telegram ID"}[lang]);search.setAttribute("aria-label",search.placeholder);toolbar.append(search);list.append(toolbar);
+ const usersSection=document.createElement("section");usersSection.className="account-admin-section";list.append(usersSection);
+ const requestsSection=document.createElement("section");requestsSection.className="account-admin-section";list.append(requestsSection);
  try{
   const [userData,data]=await Promise.all([adminCall("account-users"),adminCall("account-deletion-requests")]);
   const users=Array.isArray(userData.users)?userData.users:[];
   const items=Array.isArray(data.requests)?data.requests:[];
   status.textContent=({hy:"Օգտատերեր՝ ",ru:"Аккаунтов: ",en:"Accounts: "}[lang])+users.length+" · "+({hy:"Հայտեր՝ ",ru:"Заявок: ",en:"Requests: "}[lang])+items.length;
-  const userHeading=document.createElement("h4");userHeading.textContent=({hy:"Բոլոր հաշիվները",ru:"Все аккаунты",en:"All accounts"}[lang]);list.append(userHeading);
+  const userHeading=document.createElement("h4");userHeading.className="account-admin-section-title";userHeading.textContent=({hy:"Բոլոր հաշիվները",ru:"Все аккаунты",en:"All accounts"}[lang]);usersSection.append(userHeading);
+  const usersGrid=document.createElement("div");usersGrid.className="account-admin-grid";usersSection.append(usersGrid);
   for(const u of users){
    const roles=Array.isArray(u.roles)?u.roles.map(x=>x.role):[];
-   const card=document.createElement("article");card.className="admin-company";
-   const name=document.createElement("h4");name.textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"—";card.append(name);
-   const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=[u.phone_e164,"Telegram ID: "+u.telegram_id,"Status: "+u.status,"Roles: "+roles.join(", ")].filter(Boolean).join(" · ");card.append(meta);
+   const card=document.createElement("article");card.className="admin-company account-admin-card";
+   card.dataset.search=[u.first_name,u.last_name,u.telegram_id,u.phone_e164].filter(Boolean).join(" ").toLowerCase();
+   const name=document.createElement("h4");name.textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||({hy:"Անունը նշված չէ",ru:"Имя не указано",en:"Name unavailable"}[lang]);card.append(name);
+   const idLine=document.createElement("p");idLine.className="admin-meta account-admin-detail";idLine.textContent="Telegram ID: "+(u.telegram_id||"—");card.append(idLine);
+   const statusLabels={hy:{deletion_pending:"Հեռացումը պլանավորված է",pending_verification:"Սպասում է հաստատման",active:"Ակտիվ",frozen:"Սառեցված",soft_deleted:"Հեռացված է"},ru:{deletion_pending:"Удаление запланировано",pending_verification:"Ожидает подтверждения",active:"Активен",frozen:"Заморожен",soft_deleted:"Удалён"},en:{deletion_pending:"Deletion scheduled",pending_verification:"Pending verification",active:"Active",frozen:"Frozen",soft_deleted:"Deleted"}};
+   const statusLine=document.createElement("p");statusLine.className="account-admin-status";statusLine.textContent=({hy:"Կարգավիճակ՝ ",ru:"Статус: ",en:"Status: "}[lang])+(statusLabels[lang]?.[u.status]||u.status||"—");statusLine.dataset.status=u.status||"";card.append(statusLine);
+   const roleNames={hy:{admin:"Ադմինիստրատոր",superadmin:"Գլխավոր ադմինիստրատոր",client:"Հաճախորդ",partner:"Գործընկեր"},ru:{admin:"Администратор",superadmin:"Суперадминистратор",client:"Клиент",partner:"Партнёр"},en:{admin:"Administrator",superadmin:"Super administrator",client:"Customer",partner:"Partner"}};
+   const roleLine=document.createElement("p");roleLine.className="admin-meta account-admin-detail";roleLine.textContent=({hy:"Դերեր՝ ",ru:"Роли: ",en:"Roles: "}[lang])+(roles.map(x=>roleNames[lang]?.[x]||x).join(", ")||"—");card.append(roleLine);
+   if(u.phone_e164){const phone=document.createElement("p");phone.className="admin-meta account-admin-detail";phone.textContent=({hy:"Հեռախոս՝ ",ru:"Телефон: ",en:"Phone: "}[lang])+u.phone_e164;card.append(phone);}
    if(!roles.some(x=>x==="admin"||x==="superadmin")&&!["soft_deleted","deletion_pending"].includes(u.status)){
     const frozen=u.status==="frozen";const b=document.createElement("button");b.type="button";b.textContent=frozen?({hy:"Ապասառեցնել",ru:"Разморозить",en:"Unfreeze"}[lang]):({hy:"Սառեցնել հաշիվը",ru:"Заморозить аккаунт",en:"Freeze account"}[lang]);
     b.addEventListener("click",async()=>{const reason=prompt(({hy:"Պատճառը",ru:"Причина",en:"Reason"}[lang]),frozen?"Restored by administrator":"Frozen by administrator");if(reason===null||reason.trim().length<3)return;b.disabled=true;try{await adminCall("account-freeze","POST",{user_id:u.id,frozen:!frozen,reason:reason.trim()});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));b.disabled=false;}});
     card.append(b);
    }
-   list.append(card);
+   usersGrid.append(card);
   }
-  const requestHeading=document.createElement("h4");requestHeading.textContent=({hy:"Հեռացման հայտեր",ru:"Заявки на удаление",en:"Deletion requests"}[lang]);list.append(requestHeading);
-  if(!items.length){const empty=document.createElement("p");empty.className="room-placeholder";empty.textContent=({hy:"Հաշիվների հեռացման հայտեր դեռ չկան։",ru:"Заявок на удаление аккаунта пока нет.",en:"No account deletion requests yet."}[lang]);list.append(empty);return;}
+  const requestHeading=document.createElement("h4");requestHeading.className="account-admin-section-title";requestHeading.textContent=({hy:"Հեռացման հայտեր",ru:"Заявки на удаление",en:"Deletion requests"}[lang]);requestsSection.append(requestHeading);
+  const requestFilters=document.createElement("div");requestFilters.className="account-admin-filters";
+  const requestFilter=document.createElement("select");requestFilter.className="account-admin-filter";requestFilter.setAttribute("aria-label",({hy:"Զտել ըստ կարգավիճակի",ru:"Фильтр по статусу",en:"Filter by status"}[lang]));
+  const filterOptions={hy:[["all","Բոլոր կարգավիճակները"],["pending","Սպասում է որոշման"],["approved","Հաստատված"],["rejected","Մերժված"],["cancelled","Չեղարկված"]],ru:[["all","Все статусы"],["pending","Ожидает решения"],["approved","Одобрено"],["rejected","Отклонено"],["cancelled","Отменено"]],en:[["all","All statuses"],["pending","Pending review"],["approved","Approved"],["rejected","Rejected"],["cancelled","Cancelled"]]}[lang]||[];
+  for(const [value,label] of filterOptions){const option=document.createElement("option");option.value=value;option.textContent=label;requestFilter.append(option);}requestFilters.append(requestFilter);requestsSection.append(requestFilters);
+  const requestsGrid=document.createElement("div");requestsGrid.className="account-admin-grid";requestsSection.append(requestsGrid);
+  if(!items.length){const empty=document.createElement("p");empty.className="room-placeholder";empty.textContent=({hy:"Հաշիվների հեռացման հայտեր դեռ չկան։",ru:"Заявок на удаление аккаунта пока нет.",en:"No account deletion requests yet."}[lang]);requestsGrid.append(empty);return;}
   for(const item of items){
-   const card=document.createElement("article");card.className="admin-company";
-   const u=item.user||{};
-   const name=document.createElement("h4");name.textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||"Deleted / unknown user";card.append(name);
-   const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=[u.phone_e164,"Telegram ID: "+(u.telegram_id||"—"),"Status: "+(u.status||"—")].filter(Boolean).join(" · ");card.append(meta);
-   const reason=document.createElement("p");reason.textContent=({hy:"Պատճառը՝ ",ru:"Причина: ",en:"Reason: "}[lang])+(item.request_reason||"—");card.append(reason);
-   const details=document.createElement("p");details.className="admin-meta";details.textContent=({hy:"Հայտ՝ ",ru:"Заявка: ",en:"Requested: "}[lang])+new Date(item.requested_at).toLocaleString()+" · "+({hy:"Կարգավիճակ՝ ",ru:"Статус: ",en:"Status: "}[lang])+item.status+(item.scheduled_for?" · "+({hy:"Վերջնաժամկետ՝ ",ru:"Окончательное удаление: ",en:"Final deletion: "}[lang])+new Date(item.scheduled_for).toLocaleString():"");card.append(details);
+   const card=document.createElement("article");card.className="admin-company account-admin-card account-deletion-card";card.dataset.requestStatus=item.status||"";
+   const u=item.user||{};card.dataset.search=[u.first_name,u.last_name,u.telegram_id,u.phone_e164,item.request_reason,item.status].filter(Boolean).join(" ").toLowerCase();
+   const name=document.createElement("h4");name.textContent=[u.first_name,u.last_name].filter(Boolean).join(" ")||({hy:"Անհայտ օգտատեր",ru:"Неизвестный пользователь",en:"Unknown user"}[lang]);card.append(name);
+   const idLine=document.createElement("p");idLine.className="admin-meta account-admin-detail";idLine.textContent="Telegram ID: "+(u.telegram_id||"—");card.append(idLine);
+   const accountStatusLabels={hy:{deletion_pending:"Հեռացումը պլանավորված է",pending_verification:"Սպասում է հաստատման",active:"Ակտիվ",frozen:"Սառեցված",soft_deleted:"Հեռացված է"},ru:{deletion_pending:"Удаление запланировано",pending_verification:"Ожидает подтверждения",active:"Активен",frozen:"Заморожен",soft_deleted:"Удалён"},en:{deletion_pending:"Deletion scheduled",pending_verification:"Pending verification",active:"Active",frozen:"Frozen",soft_deleted:"Deleted"}};
+   const userStatus=document.createElement("p");userStatus.className="admin-meta account-admin-detail";userStatus.textContent=({hy:"Հաշվի կարգավիճակ՝ ",ru:"Статус аккаунта: ",en:"Account status: "}[lang])+(accountStatusLabels[lang]?.[u.status]||u.status||"—");card.append(userStatus);
+   const reason=document.createElement("p");reason.className="account-deletion-reason";reason.textContent=({hy:"Պատճառը՝ ",ru:"Причина: ",en:"Reason: "}[lang])+(item.request_reason||"—");card.append(reason);
+   const requestStatusLabels={hy:{pending:"Սպասում է որոշման",approved:"Հաստատված",rejected:"Մերժված",cancelled:"Չեղարկված",completed:"Ավարտված"},ru:{pending:"Ожидает решения",approved:"Одобрено",rejected:"Отклонено",cancelled:"Отменено",completed:"Завершено"},en:{pending:"Pending review",approved:"Approved",rejected:"Rejected",cancelled:"Cancelled",completed:"Completed"}};
+   const badge=document.createElement("span");badge.className="account-deletion-badge status-"+(item.status||"unknown");badge.textContent=requestStatusLabels[lang]?.[item.status]||item.status||"—";card.append(badge);
+   const requested=new Date(item.requested_at);const dateText=Number.isNaN(requested.getTime())?"—":requested.toLocaleString(lang==="hy"?"hy-AM":lang==="ru"?"ru-RU":"en-GB");
+   const details=document.createElement("p");details.className="admin-meta account-admin-detail";details.textContent=({hy:"Հայտի ամսաթիվ՝ ",ru:"Дата заявки: ",en:"Request date: "}[lang])+dateText;card.append(details);
+   if(item.scheduled_for){const deadline=new Date(item.scheduled_for);const deadlineLine=document.createElement("p");deadlineLine.className="account-deletion-deadline";deadlineLine.textContent=({hy:"Վերջնական հեռացում՝ ",ru:"Окончательное удаление: ",en:"Final deletion: "}[lang])+(Number.isNaN(deadline.getTime())?"—":deadline.toLocaleString(lang==="hy"?"hy-AM":lang==="ru"?"ru-RU":"en-GB"));card.append(deadlineLine);}
    if(item.finalization_error){const err=document.createElement("p");err.className="notice";err.textContent="⚠ "+item.finalization_error;card.append(err);}
    const actions=document.createElement("div");actions.className="admin-actions";
    if(item.status==="pending"){
@@ -878,8 +926,12 @@ async function loadAdminAccountDeletions(){
     final.addEventListener("click",async()=>{if(!confirm(({hy:"Վերջնական ջնջումը չի վերադարձվում։ Ֆինանսական պարտավորությունները նախ կստուգվեն։ Շարունակե՞լ։",ru:"Операция необратима. Сначала проверяются активные заказы и долги. Продолжить?",en:"This cannot be undone. Active bookings and debts are checked first. Continue?"}[lang])))return;final.disabled=true;try{await adminCall("account-delete-now","POST",{request_id:item.id,reason:"Immediate final deletion by administrator"});await loadAdminAccountDeletions();}catch(e){alert(String(e.message||e));final.disabled=false;}});
     actions.append(final);
    }
-   card.append(actions);list.append(card);
+   card.append(actions);requestsGrid.append(card);
   }
+  const emptyUsers=document.createElement("p");emptyUsers.className="room-placeholder";emptyUsers.textContent=({hy:"Համապատասխան հաշիվներ չեն գտնվել։",ru:"Подходящие аккаунты не найдены.",en:"No matching accounts found."}[lang]);emptyUsers.hidden=true;usersSection.append(emptyUsers);
+  const emptyRequests=document.createElement("p");emptyRequests.className="room-placeholder";emptyRequests.textContent=({hy:"Այս զտիչով հայտեր չեն գտնվել։",ru:"Заявки с таким статусом не найдены.",en:"No requests match this filter."}[lang]);emptyRequests.hidden=true;requestsSection.append(emptyRequests);
+  const applyFilters=()=>{const q=search.value.trim().toLowerCase();let userCount=0,requestCount=0;for(const c of usersGrid.querySelectorAll(".account-admin-card")){const show=!q||c.dataset.search.includes(q);c.hidden=!show;if(show)userCount++;}for(const c of requestsGrid.querySelectorAll(".account-deletion-card")){const show=(!q||c.dataset.search.includes(q))&&(requestFilter.value==="all"||c.dataset.requestStatus===requestFilter.value);c.hidden=!show;if(show)requestCount++;}emptyUsers.hidden=userCount>0;emptyRequests.hidden=requestCount>0;};
+  search.addEventListener("input",applyFilters);requestFilter.addEventListener("change",applyFilters);
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել հաշիվները։",ru:"Не удалось загрузить аккаунты: ",en:"Could not load accounts: "}[lang])+String(e.message||e);}
 }
 
