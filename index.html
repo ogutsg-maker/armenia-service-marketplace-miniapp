@@ -754,40 +754,28 @@ async function loadAdminDashboard(){
  };
  const pending=(items,states)=>items.filter(x=>states.includes(String(x.status||"").toLowerCase())).length;
  try{
-  const results=await Promise.allSettled([
-   adminCall("account-users"),adminCall("companies"),adminCall("company-services"),
-   adminCall("applications"),adminCall("service-applications"),adminCall("account-deletion-requests"),
-   adminCall("admin-orders"),adminCall("admin-finance"),adminCall("admin-disputes"),
-   adminCall("admin-catalog-settings"),adminCall("admin-audit")
-  ]);
-  const obj=(i)=>results[i].status==="fulfilled"?results[i].value:null;
-  const arr=(i,key)=>Array.isArray(obj(i)?.[key])?obj(i)[key]:null;
-  const users=arr(0,"users"),companies=arr(1,"companies"),services=arr(2,"services"),apps=arr(3,"applications"),serviceApps=arr(4,"services"),deletions=arr(5,"requests");
-  const orders=obj(6),finance=obj(7),disputes=obj(8),catalog=obj(9),audit=obj(10);
-  const bookings=Array.isArray(orders?.bookings)?orders.bookings:null,requests=Array.isArray(orders?.requests)?orders.requests:null;
-  const payments=Array.isArray(finance?.payments)?finance.payments:null;
-  const disputeRows=Array.isArray(disputes?.disputes)?disputes.disputes:null;
-  const categories=Array.isArray(catalog?.categories)?catalog.categories:null;
-  const events=Array.isArray(audit?.events)?audit.events:null;
+  const response=await adminCall("admin-dashboard-metrics");
+  const m=response.metrics||{};
   const metrics=[
-   ["users",users?.length,users!==null],
-   ["companies",companies?.length,companies!==null],
-   ["pendingCompanies",apps?.length,apps!==null],
-   ["services",services?.length,services!==null],
-   ["pendingServices",serviceApps?.length,serviceApps!==null],
-   ["deletions",deletions?pending(deletions,["pending","approved"]):null,deletions!==null],
-   ["requests",requests?.length,requests!==null],
-   ["bookings",bookings?.length,bookings!==null],
-   ["pendingPayments",payments?pending(payments,["created","pending","processing","refund_pending"]):null,payments!==null],
-   ["disputes",disputeRows?pending(disputeRows,["open","under_review"]):null,disputeRows!==null],
-   ["categories",categories?.length,categories!==null],
-   ["audit",events?.length,events!==null]
+   ["users",m.users,typeof m.users==="number"],
+   ["companies",m.companies,typeof m.companies==="number"],
+   ["pendingCompanies",m.pendingCompanies,typeof m.pendingCompanies==="number"],
+   ["services",m.services,typeof m.services==="number"],
+   ["pendingServices",m.pendingServices,typeof m.pendingServices==="number"],
+   ["deletions",m.deletions,typeof m.deletions==="number"],
+   ["requests",m.requests,typeof m.requests==="number"],
+   ["bookings",m.bookings,typeof m.bookings==="number"],
+   ["pendingPayments",m.pendingPayments,typeof m.pendingPayments==="number"],
+   ["disputes",m.disputes,typeof m.disputes==="number"],
+   ["categories",m.categories,typeof m.categories==="number"],
+   ["audit",m.audit,typeof m.audit==="number"]
   ];
   for(const [key,value,available] of metrics)drawMetric(key,value,available);
-  const failed=results.filter(x=>x.status==="rejected").length;
-  const unavailable=metrics.filter(x=>!x[2]).length;
-  status.textContent=failed||unavailable?L("Թարմացվել են հասանելի տվյալները․ անհասանելի ցուցանիշներ՝ ","Доступные данные обновлены; недоступных показателей: ","Available data refreshed; unavailable metrics: ")+(unavailable||failed):L("Տվյալները հաջողությամբ թարմացվել են։","Данные успешно обновлены.","Data refreshed successfully.");
-  updated.textContent=L("Վերջին թարմացում՝ ","Последнее обновление: ","Last updated: ")+new Date().toLocaleString(lang==="ru"?"ru-RU":lang==="en"?"en-US":"hy-AM");
+  const unavailable=metrics.filter(x=>!x[2]);
+  status.textContent=unavailable.length?L("Տվյալները թարմացվել են․ անհասանելի ցուցանիշներ՝ ","Данные обновлены; недоступные показатели: ","Data refreshed; unavailable metrics: ")+unavailable.map(x=>labels[x[0]][lang]||labels[x[0]].en).join(", "):L("Տվյալները հաջողությամբ թարմացվել են։","Данные успешно обновлены.","Data refreshed successfully.");
+  const stamp=response.updated_at?new Date(response.updated_at):new Date();
+  updated.textContent=L("Վերջին թարմացում՝ ","Последнее обновление: ","Last updated: ")+stamp.toLocaleString(lang==="ru"?"ru-RU":lang==="en"?"en-US":"hy-AM");
+
  }catch(e){status.textContent=L("Չհաջողվեց բեռնել վահանակը՝ ","Не удалось загрузить панель: ","Could not load dashboard: ")+String(e.message||e);}
 }
 async function loadAdminUsers(){
