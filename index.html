@@ -84,6 +84,12 @@ body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-deadline{margin:2px 
 body:has(#adminCabinetPanel:not(.hidden)) .account-admin-filters{display:flex;margin:0 0 12px}
 body:has(#adminCabinetPanel:not(.hidden)) .account-admin-filter{width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:9px;background:#fff;color:var(--admin-ink);font:inherit}
 body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-card .admin-actions{display:flex;flex-wrap:wrap;width:100%;gap:8px;margin-top:12px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-group{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:16px;background:#fff;border:1px solid var(--admin-border);border-radius:14px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-group-title{margin:0;font-size:16px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-history-label{margin:4px 0 0;font-size:12px;font-weight:750;color:var(--admin-muted)}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-history{display:grid;gap:10px}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-history .account-deletion-card{padding:12px;border:1px solid var(--admin-border);background:#f8fafc;border-radius:10px;box-shadow:none}
+body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-history .account-deletion-card[hidden]{display:none!important}
 body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-card .admin-actions button{flex:1 1 180px;white-space:normal}
 @media(max-width:1050px){body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid{grid-template-columns:1fr}}
 @media(max-width:850px){body:has(#adminCabinetPanel:not(.hidden)) .account-admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -901,7 +907,7 @@ async function loadAdminAccountDeletions(){
   if(!items.length){const empty=document.createElement("p");empty.className="room-placeholder";empty.textContent=({hy:"Հաշիվների հեռացման հայտեր դեռ չկան։",ru:"Заявок на удаление аккаунта пока нет.",en:"No account deletion requests yet."}[lang]);requestsGrid.append(empty);return;}
   for(const item of items){
    const card=document.createElement("article");card.className="admin-company account-admin-card account-deletion-card";card.dataset.requestStatus=item.status||"";
-   const u=item.user||{};card.dataset.search=[u.first_name,u.last_name,u.telegram_id,u.phone_e164,item.request_reason,item.status].filter(Boolean).join(" ").toLowerCase();
+   const u=item.user||{};card.dataset.userId=String(u.id||u.telegram_id||"unknown");card.dataset.search=[u.first_name,u.last_name,u.telegram_id,u.phone_e164,item.request_reason,item.status].filter(Boolean).join(" ").toLowerCase();
    const name=document.createElement("h4");const rawName=[u.first_name,u.last_name].filter(Boolean).join(" ").trim();const looksLikeStatus=/^(deletion pending|удаление запланировано|հեռացումը պլանավորված է)$/i.test(rawName);name.textContent=rawName&&!looksLikeStatus?rawName:({hy:"Օգտատեր առանց անվան",ru:"Пользователь без имени",en:"User without a name"}[lang]);card.append(name);
    const idLine=document.createElement("p");idLine.className="admin-meta account-admin-detail";idLine.textContent="Telegram ID: "+(u.telegram_id||"—");card.append(idLine);
    const accountStatusLabels={hy:{deletion_pending:"Հեռացումը պլանավորված է",pending_verification:"Սպասում է հաստատման",active:"Ակտիվ",frozen:"Սառեցված",soft_deleted:"Հեռացված է"},ru:{deletion_pending:"Удаление запланировано",pending_verification:"Ожидает подтверждения",active:"Активен",frozen:"Заморожен",soft_deleted:"Удалён"},en:{deletion_pending:"Deletion scheduled",pending_verification:"Pending verification",active:"Active",frozen:"Frozen",soft_deleted:"Deleted"}};
@@ -931,9 +937,25 @@ async function loadAdminAccountDeletions(){
    }
    card.append(actions);requestsGrid.append(card);
   }
+  // Group deletion request history by account, retaining each request's own decision/actions.
+  const grouped=new Map();
+  for(const child of Array.from(requestsGrid.querySelectorAll(".account-deletion-card"))){
+   const key=child.dataset.userId||"unknown";
+   if(!grouped.has(key)){
+    const group=document.createElement("article");group.className="account-deletion-group admin-company";group.dataset.userId=key;
+    const heading=document.createElement("h4");heading.className="account-deletion-group-title";heading.textContent=child.querySelector("h4")?.textContent||({hy:"Օգտատեր առանց անվան",ru:"Пользователь без имени",en:"User without a name"}[lang]);group.append(heading);
+    const idNode=Array.from(child.querySelectorAll("p")).find(p=>p.textContent.startsWith("Telegram ID:"));if(idNode){const id=idNode.cloneNode(true);id.className="admin-meta account-admin-detail";group.append(id);}
+    const historyTitle=document.createElement("p");historyTitle.className="account-deletion-history-label";historyTitle.textContent=({hy:"Հայտերի պատմություն",ru:"История заявок",en:"Request history"}[lang]);group.append(historyTitle);
+    const history=document.createElement("div");history.className="account-deletion-history";group.append(history);grouped.set(key,{group,history,search:[]});requestsGrid.append(group);
+   }
+   const entry=grouped.get(key);entry.search.push(child.dataset.search||"");entry.history.append(child);
+   const repeatedName=child.querySelector("h4");if(repeatedName)repeatedName.remove();
+   const repeatedId=Array.from(child.querySelectorAll("p")).find(p=>p.textContent.startsWith("Telegram ID:"));if(repeatedId)repeatedId.remove();
+  }
+  for(const entry of grouped.values())entry.group.dataset.search=entry.search.join(" ");
   const emptyUsers=document.createElement("p");emptyUsers.className="room-placeholder";emptyUsers.textContent=({hy:"Համապատասխան հաշիվներ չեն գտնվել։",ru:"Подходящие аккаунты не найдены.",en:"No matching accounts found."}[lang]);emptyUsers.hidden=true;usersSection.append(emptyUsers);
   const emptyRequests=document.createElement("p");emptyRequests.className="room-placeholder";emptyRequests.textContent=({hy:"Այս զտիչով հայտեր չեն գտնվել։",ru:"Заявки с таким статусом не найдены.",en:"No requests match this filter."}[lang]);emptyRequests.hidden=true;requestsSection.append(emptyRequests);
-  const applyFilters=()=>{const q=search.value.trim().toLowerCase();let userCount=0,requestCount=0;for(const c of usersGrid.querySelectorAll(".account-admin-card")){const show=!q||c.dataset.search.includes(q);c.hidden=!show;if(show)userCount++;}for(const c of requestsGrid.querySelectorAll(".account-deletion-card")){const show=(!q||c.dataset.search.includes(q))&&(requestFilter.value==="all"||c.dataset.requestStatus===requestFilter.value);c.hidden=!show;if(show)requestCount++;}emptyUsers.hidden=userCount>0;emptyRequests.hidden=requestCount>0;};
+  const applyFilters=()=>{const q=search.value.trim().toLowerCase();let userCount=0,requestCount=0;for(const c of usersGrid.querySelectorAll(".account-admin-card")){const show=!q||c.dataset.search.includes(q);c.hidden=!show;if(show)userCount++;}for(const group of requestsGrid.querySelectorAll(".account-deletion-group")){const groupMatch=!q||group.dataset.search.includes(q);let visible=0;for(const c of group.querySelectorAll(".account-deletion-card")){const show=groupMatch&&(requestFilter.value==="all"||c.dataset.requestStatus===requestFilter.value);c.hidden=!show;if(show){visible++;requestCount++;}}group.hidden=visible===0;}emptyUsers.hidden=userCount>0;emptyRequests.hidden=requestCount>0;};
   search.addEventListener("input",applyFilters);requestFilter.addEventListener("change",applyFilters);
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել հաշիվները։",ru:"Не удалось загрузить аккаунты: ",en:"Could not load accounts: "}[lang])+String(e.message||e);}
 }
