@@ -157,21 +157,21 @@ body:has(#adminCabinetPanel:not(.hidden)) .account-deletion-card .admin-actions 
 </section>
 
 <section class="panel hidden" id="partnerAIPanel">
- <div class="label" id="partnerAIHeading">AI-оператор регистрации бизнеса</div>
- <p class="notice" id="partnerAIIntro">Գրանցման հայտի լրացում և ուղարկում</p>
- <div id="partnerAIStatus" class="notice" role="status" aria-live="polite"></div>
- <button class="back-button" id="partnerAIVerifyPhone" type="button">Подтвердить телефон через Telegram</button><div id="partnerAIPhoneMessage" class="notice" role="status" aria-live="polite"></div>
+ <div class="label" id="partnerAIHeading">AI-помощник регистрации бизнеса</div>
+ <p class="notice hidden" id="partnerAIIntro"> </p>
  <div id="partnerAIChat" aria-live="polite" style="display:grid;gap:10px;margin:14px 0"></div>
- <textarea id="partnerAIInput" maxlength="4000" placeholder="Название бизнеса, описание деятельности и адрес…" style="min-height:90px"></textarea>
- <label class="notice" id="partnerAIDocumentLabel" for="partnerAIBusinessDoc">Գրանցման փաստաթուղթ (PDF/JPG/PNG, մինչև 3 ՄԲ, կարելի է կցել հիմա)</label>
- <input id="partnerAIBusinessDoc" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-label="Գրանցման փաստաթուղթ">
- <button class="back-button hidden" id="partnerAIBusinessDocUpload" type="button" aria-hidden="true">Վերբեռնել փաստաթուղթը / Загрузить документ / Upload document</button>
+ <textarea id="partnerAIInput" maxlength="4000" placeholder="Напишите ответ или уточните данные…" aria-label="Сообщение AI-помощнику" style="min-height:90px"></textarea>
+ <label class="notice" id="partnerAIDocumentLabel" for="partnerAIBusinessDoc">Документ, подтверждающий деятельность (PDF/JPG/PNG, до 3 МБ)</label>
+ <input id="partnerAIBusinessDoc" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" aria-label="Документ, подтверждающий деятельность">
+ <button class="back-button hidden" id="partnerAIBusinessDocUpload" type="button" aria-hidden="true">Upload document</button>
  <div id="partnerAIBusinessDocStatus" class="notice" role="status" aria-live="polite"></div>
- <button class="action" id="partnerAISend" type="button">Отправить AI</button>
+ <button class="action" id="partnerAISend" type="button">Отправить сообщение</button>
  <div id="partnerAIReview" class="cabinet-room-content hidden"></div>
- <button class="action hidden" id="partnerAIConfirm" type="button">Подтвердить и отправить заявку</button>
- <button class="back-button" id="partnerAIEdit" type="button">Продолжить диалог / исправить данные</button>
- 
+ <button class="action hidden" id="partnerAIConfirm" type="button">Подтверждаю — отправить администратору</button>
+ <button class="back-button hidden" id="partnerAIEdit" type="button">Продолжить диалог / исправить данные</button>
+ <div id="partnerAIStatus" class="notice" role="status" aria-live="polite"></div>
+ <button class="back-button" id="partnerAIVerifyPhone" type="button">Подтвердить телефон через Telegram</button>
+ <div id="partnerAIPhoneMessage" class="notice" role="status" aria-live="polite"></div>
 </section>
 <section class="panel hidden" id="partnerPanel">
 <div class="label">Գրանցվել որպես գործընկեր / Регистрация партнёра / Partner registration</div>
