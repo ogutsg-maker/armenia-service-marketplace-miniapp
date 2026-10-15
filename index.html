@@ -723,20 +723,72 @@ async function loadPartnerCompanies(){
 }
 async function loadAdminDashboard(){
  const panel=$("adminRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
- const title=document.createElement("h3");title.textContent=({hy:"Գլխավոր վահանակ",ru:"Обзор платформы",en:"Platform overview"}[lang]);panel.append(title);
- const intro=document.createElement("p");intro.className="notice";intro.textContent=({hy:"Ցուցանիշները բեռնվում են իրական տվյալներից։ Չհասանելի բաժինները չեն հաշվարկվում որպես զրո։",ru:"Показатели загружаются из реальных данных. Недоступные разделы не считаются нулевыми.",en:"Metrics come from live data. Unavailable areas are not counted as zero."}[lang]);panel.append(intro);
- const status=document.createElement("p");status.className="notice";status.textContent=({hy:"Բեռնվում է…",ru:"Загрузка…",en:"Loading…"}[lang]);panel.append(status);
+ const L=(hy,ru,en)=>({hy,ru,en}[lang]||en);
+ const title=document.createElement("h3");title.textContent=L("Գլխավոր վահանակ","Главная панель","Dashboard");panel.append(title);
+ const intro=document.createElement("p");intro.className="notice";intro.textContent=L("Ցուցանիշները բեռնվում են հարթակի իրական տվյալներից։ Եթե բաժինը հասանելի չէ, դրա ցուցանիշը չի փոխարինվում զրոյով։","Показатели загружаются из реальных данных платформы. Если раздел недоступен, его значение не подменяется нулём.","Metrics load from live platform data. Unavailable sections are never substituted with zero.");panel.append(intro);
+ const status=document.createElement("p");status.className="notice";status.textContent=L("Բեռնվում է…","Загрузка…","Loading…");panel.append(status);
+ const actions=document.createElement("div");actions.style.cssText="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 14px";
+ const refresh=document.createElement("button");refresh.type="button";refresh.textContent=L("Թարմացնել տվյալները","Обновить данные","Refresh data");refresh.onclick=()=>loadAdminDashboard();actions.append(refresh);
+ const updated=document.createElement("span");updated.className="admin-meta";updated.textContent=L("Վերջին թարմացում՝ դեռ չկա","Последнее обновление: ещё не было","Last updated: not yet");actions.append(updated);panel.append(actions);
  const grid=document.createElement("div");grid.style.cssText="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px";panel.append(grid);
- const labels={users:{hy:"Օգտատերեր",ru:"Пользователи",en:"Users"},companies:{hy:"Ընկերություններ",ru:"Компании",en:"Companies"},pendingCompanies:{hy:"Սպասող գործընկերների հայտեր",ru:"Заявки партнёров на проверке",en:"Partner applications pending"},services:{hy:"Ծառայություններ",ru:"Услуги",en:"Services"},pendingServices:{hy:"Սպասող ծառայությունների ստուգում",ru:"Услуги на модерации",en:"Services awaiting review"},deletions:{hy:"Սպասող հաշվի հեռացումներ",ru:"Заявки на удаление",en:"Account deletion requests"}};
+ const labels={
+ users:{hy:"Օգտատերեր",ru:"Пользователи",en:"Users"},
+ companies:{hy:"Ակտիվ ընկերություններ",ru:"Активные компании",en:"Active companies"},
+ pendingCompanies:{hy:"Գործընկերների սպասող հայտեր",ru:"Заявки партнёров на проверке",en:"Partner applications pending"},
+ services:{hy:"Ակտիվ ծառայություններ",ru:"Активные услуги",en:"Active services"},
+ pendingServices:{hy:"Ծառայությունների սպասող ստուգումներ",ru:"Услуги на модерации",en:"Services awaiting review"},
+ deletions:{hy:"Հեռացման սպասող հայտեր",ru:"Заявки на удаление",en:"Deletion requests pending"},
+ requests:{hy:"Հաճախորդների հայտեր",ru:"Заявки клиентов",en:"Customer requests"},
+ bookings:{hy:"Պատվերներ",ru:"Заказы",en:"Bookings"},
+ pendingPayments:{hy:"Սպասող վճարումներ",ru:"Ожидающие платежи",en:"Pending payments"},
+ disputes:{hy:"Չլուծված վեճեր",ru:"Неразрешённые споры",en:"Unresolved disputes"},
+ categories:{hy:"Կատեգորիաներ",ru:"Категории",en:"Catalog categories"},
+ audit:{hy:"Աուդիտի գրառումներ",ru:"Записи аудита",en:"Audit events"}
+ };
+ const cardValues={};
+ const drawMetric=(key,value,available=true)=>{
+  let card=cardValues[key]?.card;
+  if(!card){card=document.createElement("article");card.className="admin-company";const h=document.createElement("h4");h.textContent=labels[key][lang]||labels[key].en;const v=document.createElement("div");v.style.cssText="font-size:30px;font-weight:800;line-height:1.2;margin:8px 0";const meta=document.createElement("p");meta.className="admin-meta";card.append(h,v,meta);grid.append(card);cardValues[key]={card,value:v,meta};}
+  cardValues[key].value.textContent=available&&value!==null&&value!==undefined?String(value):"—";
+  cardValues[key].meta.textContent=!available?L("Տվյալները հասանելի չեն․ բացեք համապատասխան բաժինը","Данные недоступны — откройте соответствующий раздел","Data unavailable — open the corresponding section"):L("Տվյալների վերջին հաջող պատասխանը","Последний успешный ответ источника","Latest successful source response");
+ };
+ const pending=(items,states)=>items.filter(x=>states.includes(String(x.status||"").toLowerCase())).length;
  try{
-  const results=await Promise.allSettled([adminCall("account-users"),adminCall("companies"),adminCall("company-services"),adminCall("applications"),adminCall("service-applications"),adminCall("account-deletion-requests")]);
-  const read=(idx,key)=>results[idx].status==="fulfilled"&&Array.isArray(results[idx].value[key])?results[idx].value[key]:null;
-  const users=read(0,"users"),companies=read(1,"companies"),services=read(2,"services"),apps=read(3,"applications"),serviceApps=read(4,"services"),deletions=read(5,"requests");
-  const metrics=[["users",users?.length,users],["companies",companies?.length,companies],["pendingCompanies",apps?.length,apps],["services",services?.length,services],["pendingServices",serviceApps?.length,serviceApps],["deletions",deletions?.filter(x=>x.status==="pending").length,deletions]];
-  for(const [key,value,source] of metrics){const card=document.createElement("article");card.className="admin-company";const h=document.createElement("h4");h.textContent=labels[key][lang]||labels[key].en;card.append(h);const v=document.createElement("div");v.style.cssText="font-size:30px;font-weight:800;line-height:1.2;margin:8px 0";v.textContent=value===undefined||value===null?"—":String(value);card.append(v);const meta=document.createElement("p");meta.className="admin-meta";meta.textContent=value===undefined||value===null?({hy:"Տվյալները հասանելի չեն",ru:"Данные недоступны",en:"Data unavailable"}[lang]):({hy:"Հիմնված է տվյալների բազայի ընթացիկ պատասխանի վրա",ru:"По текущему ответу базы данных",en:"Based on the current database response"}[lang]);card.append(meta);grid.append(card);}
+  const results=await Promise.allSettled([
+   adminCall("account-users"),adminCall("companies"),adminCall("company-services"),
+   adminCall("applications"),adminCall("service-applications"),adminCall("account-deletion-requests"),
+   adminCall("admin-orders"),adminCall("admin-finance"),adminCall("admin-disputes"),
+   adminCall("admin-catalog-settings"),adminCall("admin-audit")
+  ]);
+  const obj=(i)=>results[i].status==="fulfilled"?results[i].value:null;
+  const arr=(i,key)=>Array.isArray(obj(i)?.[key])?obj(i)[key]:null;
+  const users=arr(0,"users"),companies=arr(1,"companies"),services=arr(2,"services"),apps=arr(3,"applications"),serviceApps=arr(4,"services"),deletions=arr(5,"requests");
+  const orders=obj(6),finance=obj(7),disputes=obj(8),catalog=obj(9),audit=obj(10);
+  const bookings=Array.isArray(orders?.bookings)?orders.bookings:null,requests=Array.isArray(orders?.requests)?orders.requests:null;
+  const payments=Array.isArray(finance?.payments)?finance.payments:null;
+  const disputeRows=Array.isArray(disputes?.disputes)?disputes.disputes:null;
+  const categories=Array.isArray(catalog?.categories)?catalog.categories:null;
+  const events=Array.isArray(audit?.events)?audit.events:null;
+  const metrics=[
+   ["users",users?.length,users!==null],
+   ["companies",companies?.length,companies!==null],
+   ["pendingCompanies",apps?.length,apps!==null],
+   ["services",services?.length,services!==null],
+   ["pendingServices",serviceApps?.length,serviceApps!==null],
+   ["deletions",deletions?pending(deletions,["pending","approved"]):null,deletions!==null],
+   ["requests",requests?.length,requests!==null],
+   ["bookings",bookings?.length,bookings!==null],
+   ["pendingPayments",payments?pending(payments,["created","pending","processing","refund_pending"]):null,payments!==null],
+   ["disputes",disputeRows?pending(disputeRows,["open","under_review"]):null,disputeRows!==null],
+   ["categories",categories?.length,categories!==null],
+   ["audit",events?.length,events!==null]
+  ];
+  for(const [key,value,available] of metrics)drawMetric(key,value,available);
   const failed=results.filter(x=>x.status==="rejected").length;
-  status.textContent=failed?({hy:"Որոշ ցուցանիշներ չբեռնվեցին ("+failed+"). Ստուգեք համապատասխան բաժինները։",ru:"Не удалось загрузить некоторые показатели ("+failed+"). Проверьте соответствующие разделы.",en:"Some metrics failed to load ("+failed+"). Check the corresponding sections."}[lang]):({hy:"Տվյալները թարմացված են։",ru:"Данные обновлены.",en:"Data loaded successfully."}[lang]);
- }catch(e){status.textContent=String(e.message||e);}
+  const unavailable=metrics.filter(x=>!x[2]).length;
+  status.textContent=failed||unavailable?L("Թարմացվել են հասանելի տվյալները․ անհասանելի ցուցանիշներ՝ ","Доступные данные обновлены; недоступных показателей: ","Available data refreshed; unavailable metrics: ")+(unavailable||failed):L("Տվյալները հաջողությամբ թարմացվել են։","Данные успешно обновлены.","Data refreshed successfully.");
+  updated.textContent=L("Վերջին թարմացում՝ ","Последнее обновление: ","Last updated: ")+new Date().toLocaleString(lang==="ru"?"ru-RU":lang==="en"?"en-US":"hy-AM");
+ }catch(e){status.textContent=L("Չհաջողվեց բեռնել վահանակը՝ ","Не удалось загрузить панель: ","Could not load dashboard: ")+String(e.message||e);}
 }
 async function loadAdminUsers(){
  const panel=$("adminRoomContent");panel.replaceChildren();panel.classList.remove("hidden");
