@@ -466,6 +466,8 @@ body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetNav button.active{backgro
 
 /* Unified messenger-style AI chat for client, partner and administrator */
 .shared-chat-modes{display:flex;gap:6px;overflow-x:auto;padding:5px 1px 8px;scrollbar-width:none;flex:0 0 auto}
+/* Partner workflow: one AI conversation is the primary interface; context tabs are intentionally hidden. */
+#partnerAIPanel[data-role="partner"] #sharedChatModes{display:none!important}
 .shared-chat-modes::-webkit-scrollbar{display:none}
 .shared-chat-modes button{flex:0 0 auto;min-height:34px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font:inherit;font-size:12px;font-weight:700;white-space:nowrap}
 .shared-chat-modes button.active{background:#203b4c;color:#fff;border-color:#203b4c}
@@ -807,7 +809,7 @@ function startPartnerAI(mode="company",companyId="",keepConversation=false,roleH
   company:{hy:"AI · Գրանցում ընկերության",ru:"AI · Регистрация компании",en:"AI · Company registration"},
   service:{hy:"AI · Ավելացնել ծառայություն",ru:"AI · Добавить услугу",en:"AI · Add a service"}
  };
- $("partnerAIExit").textContent=({hy:"‹ Բաժիններ",ru:"‹ Разделы",en:"‹ Sections"}[lang]);
+ $("partnerAIExit").textContent=({hy:"‹ Կաբինետ",ru:"‹ Кабинет",en:"‹ Workspace"}[lang]);
  $("partnerAIHeading").textContent=(headings[mode]||headings.assistant)[lang];
  const modeNav=$("sharedChatModes");
  if(modeNav){modeNav.classList.toggle("hidden",sharedAIRole!=="partner");modeNav.querySelectorAll("[data-chat-mode]").forEach(b=>b.classList.toggle("active",b.dataset.chatMode===mode));}
