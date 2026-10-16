@@ -135,6 +135,47 @@ body:has(#partnerAIPanel:not(.hidden)) #partnerAIEdit{background:transparent;bor
 #partnerAIBusinessDocStatus:empty,#partnerAIPhoneMessage:empty,#partnerAIStatus:empty{display:none}
 #partnerAIStatus,#partnerAIPhoneMessage,#partnerAIBusinessDocStatus{font-size:13px;line-height:1.5}
 #partnerAIConfirm{white-space:normal;line-height:1.45}
+
+/* Refined partner profile and account settings */
+:root{--profile-glow:rgba(232,189,112,.13);--profile-surface:#14212a;--profile-line:#30434e}
+body:has(#partnerProfileCard:not(.hidden)){background:radial-gradient(ellipse at 50% -15%,#293b43 0%,#101820 48%);background-attachment:fixed}
+body:has(#partnerProfileCard:not(.hidden)) main{max-width:680px;padding-top:calc(18px + env(safe-area-inset-top))}
+body:has(#partnerProfileCard:not(.hidden)) header{padding:13px 14px;border:1px solid #31434d;border-radius:18px;background:rgba(17,27,33,.82);box-shadow:0 12px 34px #0002;backdrop-filter:blur(14px)}
+body:has(#partnerProfileCard:not(.hidden)) .brand{font-size:11px;letter-spacing:.13em}
+body:has(#partnerProfileCard:not(.hidden)) .languages{background:#101a20;border-color:#31434d;border-radius:13px}
+body:has(#partnerProfileCard:not(.hidden)) .languages button{min-width:36px;padding:7px 8px}
+body:has(#partnerProfileCard:not(.hidden)) #profilePanel{margin-top:20px;padding:0;background:transparent;border:0;overflow:visible}
+#partnerProfileCard{position:relative!important;overflow:hidden!important;padding:26px!important;margin:0 0 16px!important;border:1px solid #46555a!important;border-radius:24px!important;background:linear-gradient(145deg,#21323b 0%,#17252e 58%,#121e25 100%)!important;box-shadow:0 22px 55px #0003!important}
+#partnerProfileCard:before{content:"";position:absolute;right:-70px;top:-95px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,var(--profile-glow),transparent 70%);pointer-events:none}
+#partnerProfileCard h2{position:relative;margin:0 0 24px;font-size:clamp(27px,6vw,34px);letter-spacing:-.045em;line-height:1.15}
+#partnerProfileCard h2:before{content:"◈";display:grid;place-items:center;width:44px;height:44px;margin-bottom:17px;border:1px solid #6d6047;border-radius:15px;background:#332f26;color:var(--accent);font-size:22px;letter-spacing:0}
+#partnerProfileCard>div[style*="border-bottom"]{position:relative;display:grid;grid-template-columns:minmax(105px,.72fr) minmax(0,1.28fr);gap:12px;align-items:center;padding:15px 0!important;border-bottom:1px solid #ffffff12!important}
+#partnerProfileCard>div[style*="border-bottom"] .notice{margin:0;color:#aebdc5;font-size:12px;letter-spacing:.035em}
+#partnerProfileCard>div[style*="border-bottom"] strong{margin:0!important;font-size:16px;font-weight:650;line-height:1.4;color:#f7f8f6}
+#partnerProfileCard>p.notice{position:relative;display:flex;align-items:center;gap:9px;margin:18px 0 0;padding:11px 13px;border:1px solid #315d4b;border-radius:12px;background:#17352b;color:#bce7cd;font-size:13px;line-height:1.45}
+#partnerProfileCard>p.notice:before{content:"✓";display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:#2b6248;color:#d8f8e5;font-weight:900}
+#partnerProfileCard .action{position:relative;margin-top:20px;min-height:50px;border-radius:14px;background:linear-gradient(110deg,#f0cc87,#dfad5c);box-shadow:0 8px 22px #e8bd7026;font-size:15px;transition:transform .15s,filter .15s}
+#partnerProfileCard .action:hover{filter:brightness(1.06);transform:translateY(-1px)}
+body:has(#partnerProfileCard:not(.hidden)) #cabinetAccountSafety{padding:21px;margin:16px 0;border-radius:20px;border-color:#31434d;background:rgba(23,35,43,.92);box-shadow:0 12px 32px #0002}
+body:has(#partnerProfileCard:not(.hidden)) #cabinetAccountSafety h3{margin:0;font-size:18px;letter-spacing:-.02em}
+body:has(#partnerProfileCard:not(.hidden)) #cabinetAccountSafetyDescription{margin:8px 0 14px;line-height:1.6}
+body:has(#partnerProfileCard:not(.hidden)) #requestAccountDeletionCabinetButton,body:has(#partnerProfileCard:not(.hidden)) #cancelAccountDeletionCabinetButton{margin:0;padding:11px 14px;border-radius:12px;border-color:#4b4540;color:#e5c9bd;font-size:13px}
+body:has(#partnerProfileCard:not(.hidden)) #cabinetAccountDeletionStatus{line-height:1.5}
+body:has(#partnerProfileCard:not(.hidden)) #languagePanel{padding:20px;margin:16px 0;border-radius:20px;border-color:#31434d;background:rgba(23,35,43,.92);box-shadow:0 12px 32px #0002}
+body:has(#partnerProfileCard:not(.hidden)) #languageLabel{font-size:14px;letter-spacing:0;text-transform:none;color:#f2f6f8}
+body:has(#partnerProfileCard:not(.hidden)) #languagePanel select{margin-top:12px;background:#101a20;border-color:#3b4c56;border-radius:12px}
+body:has(#partnerProfileCard:not(.hidden)) #languageNote{line-height:1.55}
+body:has(#partnerProfileCard:not(.hidden)) footer{margin-top:24px;padding:0 14px;line-height:1.6}
+@media(max-width:480px){
+ body:has(#partnerProfileCard:not(.hidden)) main{padding-left:13px;padding-right:13px}
+ body:has(#partnerProfileCard:not(.hidden)) header{gap:8px;padding:11px 10px}
+ body:has(#partnerProfileCard:not(.hidden)) .brand{font-size:9px;letter-spacing:.09em}
+ #partnerProfileCard{padding:21px!important;border-radius:21px!important}
+ #partnerProfileCard>div[style*="border-bottom"]{grid-template-columns:minmax(90px,.72fr) minmax(0,1.28fr);gap:8px;padding:13px 0!important}
+ #partnerProfileCard>div[style*="border-bottom"] strong{font-size:15px}
+ body:has(#partnerProfileCard:not(.hidden)) #cabinetAccountSafety,body:has(#partnerProfileCard:not(.hidden)) #languagePanel{padding:17px;border-radius:17px}
+}
+@media(prefers-reduced-motion:reduce){#partnerProfileCard .action{transition:none}}
 </style></head>
 <body><main>
 <header><div class="brand">ARMENIA · SERVICE MARKETPLACE</div><nav class="languages" aria-label="Language"><button data-lang="hy" class="active">Հայ</button><button data-lang="ru">RU</button><button data-lang="en">EN</button></nav></header>
