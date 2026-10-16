@@ -463,6 +463,30 @@ footer{color:#8c7a6a;letter-spacing:.02em}
 body:has(#adminCabinetPanel:not(.hidden)) .brand{background:linear-gradient(135deg,var(--arm-red),var(--arm-blue));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 body:has(#adminCabinetPanel:not(.hidden)) .languages button.active{background:var(--arm-blue)}
 body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetNav button.active{background:var(--admin-blue-soft);border-color:#c9dcfb;color:var(--arm-blue);box-shadow:inset 3px 0 0 var(--arm-apricot)}
+
+/* Unified messenger-style AI chat for client, partner and administrator */
+.shared-chat-modes{display:flex;gap:6px;overflow-x:auto;padding:5px 1px 8px;scrollbar-width:none;flex:0 0 auto}
+.shared-chat-modes::-webkit-scrollbar{display:none}
+.shared-chat-modes button{flex:0 0 auto;min-height:34px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font:inherit;font-size:12px;font-weight:700;white-space:nowrap}
+.shared-chat-modes button.active{background:#203b4c;color:#fff;border-color:#203b4c}
+body:has(#partnerAIPanel:not(.hidden)) #partnerAIPanel{background:#edf2f4;border:1px solid #dbe4e8;border-radius:20px;padding:12px;gap:9px}
+body:has(#partnerAIPanel:not(.hidden)) #partnerAIHeading{color:#193447;font-size:17px;font-weight:800}
+body:has(#partnerAIPanel:not(.hidden)) #partnerAIChat{padding:12px 5px;gap:10px;background:#e9f0f2;border:1px solid #dce6e9;border-radius:15px}
+#partnerAIChat .ai-bubble{max-width:min(88%,640px);align-self:flex-start;padding:11px 14px;border:1px solid #dbe5e8;border-radius:5px 16px 16px 16px;background:#fff;color:#233a47;box-shadow:0 2px 5px #203b4c0a;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+#partnerAIChat .ai-bubble strong{display:block;margin-bottom:4px;color:#6d8290;font-size:10px;letter-spacing:.04em}
+#partnerAIChat .ai-bubble.user{align-self:flex-end;background:#d8f1df;border-color:#c6e8d0;border-radius:16px 5px 16px 16px;color:#1b3a2a}
+#partnerAIChat .ai-bubble.user strong{color:#397553}
+body:has(#partnerAIPanel:not(.hidden)) #partnerAIInput{min-height:56px;max-height:24dvh;resize:vertical;border:1px solid #d7e2e6;border-radius:15px;background:#fff;color:#1b3343;padding:13px 15px;font-size:14px;box-shadow:0 2px 8px #203b4c08}
+body:has(#partnerAIPanel:not(.hidden)) #partnerAISend{min-height:48px;border-radius:14px;background:#203b4c;color:#fff;font-weight:800}
+body:has(#partnerAIPanel:not(.hidden)) #partnerAIStatus{color:#607682;font-size:12px}
+#adminCabinetNav .admin-chat-entry{background:#203b4c;color:#fff;border-color:#203b4c}
+@media(max-width:560px){
+ body:has(#partnerAIPanel:not(.hidden)) main{padding:calc(8px + env(safe-area-inset-top)) 9px calc(8px + env(safe-area-inset-bottom))}
+ body:has(#partnerAIPanel:not(.hidden)) #partnerAIPanel{padding:8px;border-radius:15px}
+ body:has(#partnerAIPanel:not(.hidden)) #partnerAIChat{padding:9px 4px}
+ #partnerAIChat .ai-bubble{max-width:94%;padding:10px 12px;font-size:13px}
+ .shared-chat-modes button{padding:7px 10px}
+}
 </style></head>
 <body><main>
 <header><div class="brand">ARMENIA · SERVICE MARKETPLACE</div><nav class="languages" aria-label="Language"><button data-lang="hy" class="active">Հայ</button><button data-lang="ru">RU</button><button data-lang="en">EN</button></nav></header>
@@ -524,7 +548,7 @@ body:has(#adminCabinetPanel:not(.hidden)) #adminCabinetNav button.active{backgro
 </section>
 
 <section class="panel hidden" id="partnerAIPanel">
- <div class="chat-toolbar"><div class="label" id="partnerAIHeading">AI-помощник</div><button id="partnerAIExit" type="button">‹ Назад</button></div><select id="partnerAICompanySelect" class="hidden" aria-label="Компания для услуги"></select>
+ <div class="chat-toolbar"><div class="label" id="partnerAIHeading">AI-помощник</div><button id="partnerAIExit" type="button">‹ Назад</button></div><nav id="sharedChatModes" class="shared-chat-modes" aria-label="AI chat context"><button type="button" data-chat-mode="assistant">AI-чат</button><button type="button" data-chat-mode="profile">Профиль</button><button type="button" data-chat-mode="company">Компания</button><button type="button" data-chat-mode="service">Услуги</button></nav><select id="partnerAICompanySelect" class="hidden" aria-label="Компания для услуги"></select>
  <p class="notice hidden" id="partnerAIIntro"> </p>
  <div id="partnerAIChat" aria-live="polite" style="display:grid;gap:10px;margin:14px 0"></div>
  <textarea id="partnerAIInput" maxlength="4000" placeholder="Напишите ответ или уточните данные…" aria-label="Сообщение AI-помощнику" style="min-height:90px"></textarea>
@@ -737,7 +761,7 @@ async function sendPartnerAI(){
  }
  input.value="";$("partnerAISend").disabled=true;$("partnerAIStatus").textContent=aiText("thinking");aiBubble("user",message);partnerAIHistory.push({role:"user",content:message});
  try{
-  const requestOptions={method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":initData},body:JSON.stringify({language:lang,mode:partnerAIIntent,messages:partnerAIHistory.slice(-16),profile:{first_name:$("profileName").textContent||"",preferred_language:lang},current_fields:partnerAIFields})};let r;try{r=await fetch(PARTNER_AI_URL,requestOptions);}catch(firstNetworkError){await new Promise(resolve=>setTimeout(resolve,700));r=await fetch(PARTNER_AI_URL,requestOptions);}
+  const requestOptions={method:"POST",headers:{"Content-Type":"application/json","X-Telegram-Init-Data":initData},body:JSON.stringify({language:lang,mode:partnerAIIntent,chat_role:sharedAIRole,messages:partnerAIHistory.slice(-16),profile:{first_name:$("profileName").textContent||"",preferred_language:lang},current_fields:partnerAIFields})};let r;try{r=await fetch(PARTNER_AI_URL,requestOptions);}catch(firstNetworkError){await new Promise(resolve=>setTimeout(resolve,700));r=await fetch(PARTNER_AI_URL,requestOptions);}
   const d=await r.json().catch(()=>({}));if(!r.ok){const detail=typeof d.detail==="string"?d.detail.slice(0,220):"";const err=new Error(d.error||"ai_unavailable");err.aiCode=d.error||"ai_unavailable";err.aiDetail=detail;throw err;}
   if(d.verified_phone){partnerAIFields.phone_e164=d.verified_phone;if(partnerAIIntent!=="profile"){partnerAIFields.first_name=d.first_name||partnerAIFields.first_name;partnerAIFields.last_name=d.last_name||partnerAIFields.last_name;}}
   if(d.company_id)partnerAIFields.company_id=d.company_id;
@@ -745,7 +769,7 @@ async function sendPartnerAI(){
   if(d.fields?.adult_confirmed===true)$("partnerAdult").checked=true;
   if(d.fields?.phone_e164 && !d.fields.phone_verified){/* a phone is only accepted by the registration API after Telegram verification */}
   partnerAIHistory.push({role:"assistant",content:answer});aiBubble("assistant",answer);
-  $("partnerAIStatus").textContent="";renderPartnerAIReview();
+  $("partnerAIStatus").textContent="";if(partnerAIIntent==="assistant"){ $("partnerAIReview").classList.add("hidden");$("partnerAIConfirm").classList.add("hidden");$("partnerAIEdit").classList.add("hidden"); }else renderPartnerAIReview();
  }catch(e){const rawCode=e?.aiCode||e?.message||"ai_unavailable";const code=rawCode==="Failed to fetch"?"ai_network_unreachable":rawCode;const detail=e?.aiDetail||"";const labels={ai_network_unreachable:"Не удалось установить соединение с AI-сервисом Supabase после повторной попытки. Запрос не дошёл до AI-оператора; проверьте сеть и повторите отправку.",ai_provider_not_configured:"Supabase не видит секрет GROQ_API_KEY. Проверьте, что секрет сохранён именно в проекте ljihvqglrmojhxqlldbr и называется GROQ_API_KEY.",ai_provider_error:"Groq отклонил запрос. Проверьте API key, доступ к модели и лимит Groq.",ai_rate_limited:"Превышен лимит Groq (429). Попробуйте позже.",telegram_auth_invalid:"Telegram не передал действительные данные авторизации. Закройте Mini App и откройте заново из бота.",profile_not_found:"Не найдена запись профиля пользователя в базе данных.",profile_lookup_failed:"Не удалось прочитать профиль пользователя из Supabase.",ai_response_invalid:"Groq вернул ответ в неподдерживаемом формате."};$("partnerAIStatus").textContent=(labels[code]||"AI недоступен. Код: "+String(code).slice(0,80))+(detail?" Детали: "+detail:"");}
  finally{$("partnerAISend").disabled=false;input.focus();}
 }
@@ -761,20 +785,59 @@ async function loadAIServiceCompanyChoices(){
  if(companies.length===1){select.value=companies[0].id;partnerAIFields.company_id=companies[0].id;select.classList.add("hidden");}
  }catch(e){$("partnerAIStatus").textContent=lang==="ru"?"Не удалось загрузить компании: ":lang==="en"?"Could not load companies: ":"Չհաջողվեց բեռնել ընկերությունները՝ "+String(e?.message||"");}
 }
-function startPartnerAI(mode="company",companyId=""){
- partnerAIIntent=mode;partnerAIFields=mode==="service"?{company_id:companyId}:{};partnerAIHistory=[];partnerAIReady=false;
- $("partnerAIPanel").dataset.mode=mode;const reviewBox=$("partnerAIReview");if(reviewBox)reviewBox.replaceChildren();const chatBox=$("partnerAIChat");if(chatBox&&reviewBox)chatBox.replaceChildren(reviewBox);else if(chatBox)chatBox.replaceChildren();if(reviewBox)reviewBox.classList.add("hidden");$("partnerAIConfirm").classList.add("hidden");$("partnerAIEdit").classList.add("hidden");$("partnerAIInput").disabled=false;$("partnerAISend").disabled=false;$("partnerAIBusinessDoc").disabled=false;$("partnerAIStatus").textContent="";
- $("partnerAIExit").textContent=({hy:"‹ Բաժիններ",ru:"‹ Разделы",en:"‹ Sections"}[lang]);$("partnerAIHeading").textContent=({profile:{hy:"AI · Իմ պրոֆիլը",ru:"AI · Мой профиль",en:"AI · My profile"},company:{hy:"AI · Գրանցում ընկերության",ru:"AI · Регистрация компании",en:"AI · Company registration"},service:{hy:"AI · Ավելացնել ծառայություն",ru:"AI · Добавить услуга",en:"AI · Add a service"}}[mode][lang]);
- $("cabinetHome").classList.add("hidden");$("cabinetRoomContent").classList.add("hidden");$("profilePanel").classList.add("hidden");$("languagePanel").classList.add("hidden");$("partnerPanel").classList.add("hidden");$("partnerAIPanel").classList.remove("hidden");$("servicePanel").classList.add("hidden");$("requestPanel").classList.add("hidden");$("cabinetNav").classList.add("hidden");$("backButton").classList.add("hidden");$("footer").classList.add("hidden");localizePartnerAI();
+let sharedAIRole="client";
+function startPartnerAI(mode="company",companyId="",keepConversation=false,roleHint=""){
+ const keep=!!keepConversation&&partnerAIHistory.length>0;
+ if(roleHint)sharedAIRole=roleHint;
+ const previousFields=partnerAIFields||{};
+ partnerAIIntent=mode;
+ partnerAIFields=keep?{...previousFields,...(mode==="service"?(companyId?{company_id:companyId}:{}):{})}:(mode==="service"?{company_id:companyId}:mode==="profile"?{first_name:currentProfile?.first_name||"",last_name:currentProfile?.last_name||"",birth_date:currentProfile?.birth_date||""}:{});
+ partnerAIReady=false;
+ $("partnerAIPanel").dataset.mode=mode;
+ $("partnerAIPanel").dataset.role=sharedAIRole;
+ const reviewBox=$("partnerAIReview"),chatBox=$("partnerAIChat");
+ if(!keep){partnerAIHistory=[];if(reviewBox)reviewBox.replaceChildren();if(chatBox&&reviewBox)chatBox.replaceChildren(reviewBox);else if(chatBox)chatBox.replaceChildren();}
+ else if(reviewBox){reviewBox.classList.add("hidden");reviewBox.remove();}
+ if(reviewBox)reviewBox.classList.add("hidden");
+ $("partnerAIConfirm").classList.add("hidden");$("partnerAIEdit").classList.add("hidden");
+ $("partnerAIInput").disabled=false;$("partnerAISend").disabled=false;$("partnerAIBusinessDoc").disabled=false;$("partnerAIStatus").textContent="";
+ const headings={
+  assistant:{hy:sharedAIRole==="admin"?"AI · Ադմինիստրատորի օգնական":sharedAIRole==="client"?"AI · Հաճախորդի օգնական":"AI · Ձեր օգնական",ru:sharedAIRole==="admin"?"AI · Помощник администратора":sharedAIRole==="client"?"AI · Помощник клиента":"AI · Ваш помощник",en:sharedAIRole==="admin"?"AI · Admin assistant":sharedAIRole==="client"?"AI · Client assistant":"AI · Your assistant"},
+  profile:{hy:"AI · Իմ պրոֆիլը",ru:"AI · Мой профиль",en:"AI · My profile"},
+  company:{hy:"AI · Գրանցում ընկերության",ru:"AI · Регистрация компании",en:"AI · Company registration"},
+  service:{hy:"AI · Ավելացնել ծառայություն",ru:"AI · Добавить услугу",en:"AI · Add a service"}
+ };
+ $("partnerAIExit").textContent=({hy:"‹ Բաժիններ",ru:"‹ Разделы",en:"‹ Sections"}[lang]);
+ $("partnerAIHeading").textContent=(headings[mode]||headings.assistant)[lang];
+ const modeNav=$("sharedChatModes");
+ if(modeNav){modeNav.classList.toggle("hidden",sharedAIRole!=="partner");modeNav.querySelectorAll("[data-chat-mode]").forEach(b=>b.classList.toggle("active",b.dataset.chatMode===mode));}
+ $("cabinetHome").classList.add("hidden");$("cabinetRoomContent").classList.add("hidden");$("profilePanel").classList.add("hidden");$("languagePanel").classList.add("hidden");$("partnerPanel").classList.add("hidden");$("partnerAIPanel").classList.remove("hidden");$("servicePanel").classList.add("hidden");$("requestPanel").classList.add("hidden");$("cabinetNav").classList.add("hidden");$("backButton").classList.add("hidden");$("footer").classList.add("hidden");
+ localizePartnerAI();
  if(!initData){$("partnerAIStatus").textContent=I18N[lang].missing;return;}
- if(mode==="profile"){const u=currentProfile||{};partnerAIFields={first_name:u.first_name||"",last_name:u.last_name||"",birth_date:u.birth_date||""};aiBubble("assistant",({hy:"Կօգնեմ լրացնել ձեր անձնական պրոֆիլը։ Գրեք անունը, ազգանունը և ծննդյան ամսաթիվը մեկ հաղորդագրությամբ։ Հեռախոսը վերցվում է միայն Telegram-ի հաստատված տվյալներից։",ru:"Помогу заполнить личный профиль. Напишите имя, фамилию и дату рождения одним сообщением. Телефон берётся только из подтверждённых данных Telegram.",en:"I’ll help complete your profile. Send your first name, surname and date of birth in one message. Phone is taken only from verified Telegram data."}[lang]));}
- if(mode==="service"&&!companyId)loadAIServiceCompanyChoices();
- else if(mode==="service"){aiBubble("assistant",({hy:"Նկարագրեք ծառայությունը, գինը և որ ընկերության համար է այն։ Ես կպատրաստեմ քարտը և ցույց կտամ հաստատման համար։",ru:"Опишите услугу, цену и для какой компании она предназначена. Я подготовлю карточку и покажу её для подтверждения.",en:"Describe the service, its price, and which company it belongs to. I’ll prepare the card and show it for confirmation."}[lang]));}
- else if(mode==="company")aiBubble("assistant",aiText("start"));
- $("partnerAIStatus").textContent="";localizePartnerAI();$("partnerAIHeading").textContent=({profile:{hy:"AI · Իմ պրոֆիլը",ru:"AI · Мой профиль",en:"AI · My profile"},company:{hy:"AI · Գրանցում ընկերության",ru:"AI · Регистрация компании",en:"AI · Company registration"},service:{hy:"AI · Ավելացնել ծառայություն",ru:"AI · Добавить услугу",en:"AI · Add a service"}}[mode][lang]);window.scrollTo({top:0,behavior:"auto"});
+ if(!keep){
+  if(mode==="profile")aiBubble("assistant",({hy:"Կօգնեմ լրացնել ձեր անձնական պրոֆիլը։ Գրեք անունը, ազգանունը և ծննդյան ամսաթիվը մեկ հաղորդագրությամբ։ Հեռախոսը վերցվում է միայն Telegram-ի հաստատված տվյալներից։",ru:"Помогу заполнить личный профиль. Напишите имя, фамилию и дату рождения одним сообщением. Телефон берётся только из подтверждённых данных Telegram.",en:"I’ll help complete your profile. Send your first name, surname and date of birth in one message. Phone is taken only from verified Telegram data."}[lang]));
+  else if(mode==="service"){if(!companyId)loadAIServiceCompanyChoices();aiBubble("assistant",({hy:"Նկարագրեք ծառայությունը և գինը։ Ես կպատրաստեմ քարտը՝ հաստատման համար։",ru:"Опишите услугу и цену. Я подготовлю карточку для подтверждения.",en:"Describe the service and price. I’ll prepare a card for confirmation."}[lang]));}
+  else if(mode==="company")aiBubble("assistant",aiText("start"));
+  else{
+   const greetings={
+    partner:{hy:"Բարև ձեզ։ Ես ձեր միասնական AI օգնականն եմ։ Կարող ենք լրացնել պրոֆիլը, գրանցել ընկերությունը կամ ավելացնել ծառայություններ՝ առանց տարբեր չաթեր բացելու։",ru:"Здравствуйте! Я ваш единый AI-помощник. Здесь можно заполнить профиль, зарегистрировать компанию и добавить услуги — без отдельных чатов.",en:"Hello! I’m your unified AI assistant. We can update your profile, register a company, and add services here without opening separate chats."},
+    client:{hy:"Բարև ձեզ։ Նկարագրեք՝ ինչ ծառայություն եք փնտրում և որտեղ։ Ես կօգնեմ գտնել համապատասխան տարբերակներ կամ ձևակերպել հայտ։",ru:"Здравствуйте! Напишите, какая услуга вам нужна и в каком городе. Я помогу найти подходящие варианты или подготовить заявку.",en:"Hello! Tell me what service you need and where. I’ll help find suitable options or prepare a request."},
+    admin:{hy:"Բարև ձեզ։ Ես ադմինիստրատորի AI օգնականն եմ։ Կարող եմ օգնել հասկանալ հայտերի կարգավիճակները, պատրաստել ստուգման քայլերը և ուղղորդել համապատասխան բաժին։ Գործողությունները կատարելուց առաջ անհրաժեշտ է ստուգել իրավունքներն ու հաստատել դրանք։",ru:"Здравствуйте! Я AI-помощник администратора. Помогу разобраться со статусами заявок, подготовить проверку и перейти в нужный раздел. Перед изменениями необходимо проверить права и подтвердить действие.",en:"Hello! I’m the admin AI assistant. I can help interpret application statuses, plan reviews, and guide you to the right section. Actions must still pass permission checks and be confirmed before execution."}
+   };
+   const greeting=(greetings[sharedAIRole]||greetings.client)[lang];partnerAIHistory.push({role:"assistant",content:greeting});aiBubble("assistant",greeting);
+  }
+ }
+ $("partnerAIStatus").textContent="";localizePartnerAI();$("partnerAIHeading").textContent=(headings[mode]||headings.assistant)[lang];window.scrollTo({top:0,behavior:"auto"});
 }
+function openUnifiedAIChat(role){
+ sharedAIRole=role;
+ if(role==="admin"){$("adminCabinetPanel").classList.add("hidden");$("adminPanel").classList.add("hidden");}
+ startPartnerAI("assistant","",partnerAIHistory.length>0,role);
+}
+$("sharedChatModes").addEventListener("click",e=>{const button=e.target.closest("[data-chat-mode]");if(!button)return;const mode=button.dataset.chatMode;startPartnerAI(mode,mode==="service"?(partnerAIFields.company_id||""):"",true,sharedAIRole);});
+
 $("partnerAISend").addEventListener("click",sendPartnerAI);
-$("partnerAIExit").addEventListener("click",()=>{if(partnerAIIntent==="profile"&&activeRole==="partner"){renderCabinet("partner");}else if(activeRole==="partner"){renderCabinet("partner");}else{showWelcome();}});
+$("partnerAIExit").addEventListener("click",()=>{if(sharedAIRole==="admin"){renderAdminCabinet();}else if(sharedAIRole==="partner"||sharedAIRole==="client"){renderCabinet(sharedAIRole);}else showWelcome();});
 $("partnerAIVerifyPhone").addEventListener("click",async()=>{await requestPhoneVerification();$("partnerAIPhoneMessage").textContent=$("phoneVerifyMessage").textContent;});
 $("partnerAIInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendPartnerAI();}});
 $("partnerAIEdit").addEventListener("click",()=>{$("partnerAIReview").classList.add("hidden");$("partnerAIConfirm").classList.add("hidden");$("partnerAIInput").focus();});
@@ -1441,7 +1504,7 @@ async function loadAdminCompanies(){
   }
  }catch(e){status.textContent=({hy:"Չհաջողվեց բեռնել ընկերությունները։",ru:"Не удалось загрузить компании.",en:"Could not load companies."}[lang]||"Could not load companies.")+" "+String(e.message||"");}
 }
-function renderAdminCabinet(){$("welcomeScreen").classList.add("hidden");["cabinetNav","cabinetHome","profilePanel","languagePanel","servicePanel","partnerPanel","requestPanel"].forEach(id=>$(id).classList.add("hidden"));$("adminPanel").classList.add("hidden");$("adminCabinetPanel").classList.remove("hidden");$("backButton").classList.remove("hidden");$("footer").classList.add("hidden");const labels={hy:{title:"Ադմինիստրատորի կաբինետ",intro:"Հարթակի կառավարում՝ ըստ թույլտվությունների։"},ru:{title:"Кабинет администратора",intro:"Управление платформой с проверкой прав доступа."},en:{title:"Administrator cabinet",intro:"Manage the platform with permission checks."}};const t=labels[lang]||labels.ru;$("adminCabinetTitle").textContent=t.title;$("adminCabinetIntro").textContent=t.intro;const nav=$("adminCabinetNav");nav.replaceChildren();for(const room of CABINET_ROOMS.admin){const b=document.createElement("button");b.type="button";b.dataset.adminRoom=room[0];b.textContent=roomLang(room[2]);b.addEventListener("click",()=>openAdminCabinetRoom(room[0]));nav.append(b);}openAdminCabinetRoom("dashboard");window.scrollTo({top:0,behavior:"auto"});}
+function renderAdminCabinet(){$("welcomeScreen").classList.add("hidden");["cabinetNav","cabinetHome","profilePanel","languagePanel","servicePanel","partnerPanel","requestPanel"].forEach(id=>$(id).classList.add("hidden"));$("adminPanel").classList.add("hidden");$("adminCabinetPanel").classList.remove("hidden");$("backButton").classList.remove("hidden");$("footer").classList.add("hidden");const labels={hy:{title:"Ադմինիստրատորի կաբինետ",intro:"Հարթակի կառավարում՝ ըստ թույլտվությունների։"},ru:{title:"Кабинет администратора",intro:"Управление платформой с проверкой прав доступа."},en:{title:"Administrator cabinet",intro:"Manage the platform with permission checks."}};const t=labels[lang]||labels.ru;$("adminCabinetTitle").textContent=t.title;$("adminCabinetIntro").textContent=t.intro;const nav=$("adminCabinetNav");nav.replaceChildren();const chatButton=document.createElement("button");chatButton.type="button";chatButton.className="admin-chat-entry";chatButton.textContent=({hy:"AI զրույց",ru:"AI-чат",en:"AI chat"}[lang]);chatButton.addEventListener("click",()=>openUnifiedAIChat("admin"));nav.append(chatButton);for(const room of CABINET_ROOMS.admin){const b=document.createElement("button");b.type="button";b.dataset.adminRoom=room[0];b.textContent=roomLang(room[2]);b.addEventListener("click",()=>openAdminCabinetRoom(room[0]));nav.append(b);}openAdminCabinetRoom("dashboard");window.scrollTo({top:0,behavior:"auto"});}
 
 let activeRole="client";
 function cabinetText(){
@@ -1464,7 +1527,7 @@ function renderCabinet(role){
 }
 // New partner sessions always start with the owner profile, never with business registration.
 
-function enterRole(role){renderCabinet(role);loadProfile().then(()=>{loadCabinetAccountDeletionStatus();if(role==="partner")startPartnerAI(profileComplete()?"company":"profile");});}
+function enterRole(role){renderCabinet(role);loadProfile().then(()=>{loadCabinetAccountDeletionStatus();openUnifiedAIChat(role);});}
 function showWelcome(){$("adminPanel").classList.add("hidden");$("adminCabinetPanel").classList.add("hidden");$("welcomeScreen").classList.remove("hidden");$("backButton").classList.add("hidden");$("cabinetNav").classList.add("hidden");["cabinetHome","cabinetRoomContent","profilePanel","languagePanel","servicePanel","partnerPanel","partnerAIPanel","requestPanel","adminCabinetPanel","footer"].forEach(id=>$(id).classList.add("hidden"));window.scrollTo({top:0,behavior:"auto"});}
 async function openBusinessRegistration(){if(!currentProfile)await loadProfile();startPartnerAI("company");}
 function openPartnerServices(){activeRole="partner";$("welcomeScreen").classList.add("hidden");$("adminCabinetPanel").classList.add("hidden");$("adminPanel").classList.add("hidden");$("profilePanel").classList.add("hidden");$("partnerPanel").classList.add("hidden");$("partnerAIPanel").classList.add("hidden");$("requestPanel").classList.add("hidden");$("servicePanel").classList.add("hidden");$("cabinetNav").classList.remove("hidden");$("backButton").classList.remove("hidden");$("cabinetHome").classList.remove("hidden");$("cabinetRooms").classList.add("hidden");$("cabinetSummary").classList.add("hidden");$("cabinetExtra").classList.add("hidden");$("cabinetPrimaryAction").classList.add("hidden");$("cabinetRoomContent").classList.remove("hidden");loadPartnerServices();window.scrollTo({top:0,behavior:"auto"});}
