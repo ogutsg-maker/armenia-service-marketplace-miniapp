@@ -371,6 +371,107 @@ body:has(#profilePanel:not(.hidden) #partnerProfileCard) footer{
 @media(max-width:350px){
  body:has(#profilePanel:not(.hidden) #partnerProfileCard) .partner-profile-details{grid-template-columns:minmax(0,1fr)}
 }
+/* ============================================================
+   PREMIUM DESIGN LAYER — professional polish (non-breaking)
+   Scoped so the admin light-theme stays intact.
+   ============================================================ */
+:root{
+  --accent:#f0c674;--accent-2:#e3a94f;
+  --accent-grad:linear-gradient(135deg,#f5d58c 0%,#e3a94f 100%);
+  --ring:rgba(240,198,116,.35);
+  --panel-grad:linear-gradient(165deg,rgba(32,48,59,.92),rgba(21,33,41,.92));
+  --shadow-sm:0 2px 8px rgba(0,0,0,.25);
+  --shadow-md:0 10px 30px -8px rgba(0,0,0,.5);
+  --shadow-glow:0 0 0 1px rgba(240,198,116,.18),0 14px 34px -12px rgba(227,169,79,.35);
+}
+/* Layered ambient background (not for the admin light view) */
+body:not(:has(#adminCabinetPanel:not(.hidden))){
+  background:
+    radial-gradient(900px 500px at 12% -8%,rgba(240,198,116,.10),transparent 60%),
+    radial-gradient(760px 480px at 100% 0%,rgba(84,140,168,.12),transparent 55%),
+    radial-gradient(1000px 700px at 50% 120%,rgba(227,169,79,.06),transparent 60%),
+    #0c1419;
+  background-attachment:fixed;
+}
+body{font-family:"Inter","SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;letter-spacing:.002em}
+
+/* Header / brand / language pill */
+.brand{font-size:11px;letter-spacing:.24em;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:800}
+.languages{background:rgba(18,28,35,.7);backdrop-filter:blur(10px);border-color:rgba(255,255,255,.08);border-radius:14px;box-shadow:var(--shadow-sm)}
+.languages button{transition:all .2s ease;border-radius:10px}
+.languages button:not(.active):hover{color:var(--text);background:rgba(255,255,255,.05)}
+.languages button.active{background:var(--accent-grad);color:#15202a;box-shadow:0 4px 12px -4px rgba(227,169,79,.6)}
+
+/* Hero typography */
+h1{font-size:clamp(28px,7vw,36px);font-weight:800;letter-spacing:-.035em;line-height:1.12;background:linear-gradient(180deg,#ffffff,#cfe0ea);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.intro{font-size:16px;line-height:1.6;color:#aebcc6}
+/* Panels — glass depth */
+.panel{background:var(--panel-grad);border:1px solid rgba(255,255,255,.07);border-radius:20px;box-shadow:var(--shadow-md);backdrop-filter:blur(6px)}
+
+/* Role cards — premium interactive */
+.role-choice{gap:14px;margin-top:28px}
+.role-card{position:relative;padding:20px;border-radius:20px;background:linear-gradient(160deg,rgba(30,45,55,.9),rgba(18,28,35,.9));border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow-sm);overflow:hidden;transition:transform .22s cubic-bezier(.2,.8,.25,1),border-color .22s,box-shadow .22s}
+.role-card:before{content:"";position:absolute;inset:0;background:var(--accent-grad);opacity:0;transition:opacity .22s;pointer-events:none;mix-blend-mode:overlay}
+.role-card:hover{transform:translateY(-3px);border-color:rgba(240,198,116,.4);box-shadow:var(--shadow-glow)}
+.role-card:hover:before{opacity:.06}
+.role-card:hover .role-arrow{transform:translateX(4px)}
+.role-icon{flex:0 0 52px;height:52px;border-radius:16px;background:linear-gradient(145deg,#33475280,#223039);border:1px solid rgba(240,198,116,.25);color:var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);font-size:26px}
+.partner-icon{background:linear-gradient(145deg,#2c3a4a80,#1f2c38);border-color:rgba(168,200,240,.3);color:#a8c8f0}
+.role-copy strong{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.role-arrow{font-size:26px;transition:transform .22s ease;color:var(--accent)}
+
+/* Primary action buttons */
+.action{border-radius:14px;padding:14px;font-weight:800;letter-spacing:.01em;background:var(--accent-grad);color:#15202a;box-shadow:0 8px 20px -8px rgba(227,169,79,.6);transition:transform .16s ease,box-shadow .2s ease,filter .2s}
+.action:hover{transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(227,169,79,.7);filter:brightness(1.04)}
+.action:active{transform:translateY(0) scale(.99)}
+.action.admin-entry{background:linear-gradient(135deg,#2f5247,#223b36);color:#d9f8e8;border:1px solid #416457;box-shadow:var(--shadow-sm)}
+
+/* Secondary / back buttons */
+.back-button,.cabinet-nav button,.room-back{border-radius:12px;transition:all .18s ease}
+.back-button:hover{border-color:rgba(240,198,116,.4);color:var(--text);background:rgba(255,255,255,.03)}
+.cabinet-nav button{background:linear-gradient(160deg,rgba(30,45,55,.7),rgba(18,28,35,.7));box-shadow:var(--shadow-sm)}
+.cabinet-nav button:hover{border-color:rgba(240,198,116,.35);transform:translateY(-1px)}
+.cabinet-nav button.primary{background:var(--accent-grad);box-shadow:0 8px 18px -8px rgba(227,169,79,.55)}
+
+/* Inputs */
+input,textarea,select{background:#0d161c;border:1px solid rgba(255,255,255,.1);border-radius:13px;transition:border-color .18s,box-shadow .18s,background .18s}
+input:hover,textarea:hover,select:hover{border-color:rgba(255,255,255,.18)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--ring);background:#0f1a21}
+/* Cabinet cards & rooms */
+.cabinet-card{background:linear-gradient(160deg,rgba(26,40,49,.8),rgba(17,27,32,.8));border:1px solid rgba(255,255,255,.07);border-radius:16px;box-shadow:var(--shadow-sm);transition:border-color .2s,transform .2s}
+.cabinet-card:hover{border-color:rgba(240,198,116,.25);transform:translateY(-1px)}
+.room-button{background:linear-gradient(160deg,rgba(26,40,49,.75),rgba(17,27,32,.85));border:1px solid rgba(255,255,255,.07);border-radius:16px;box-shadow:var(--shadow-sm);transition:transform .2s,border-color .2s,box-shadow .2s}
+.room-button:hover,.room-button:focus-visible{transform:translateY(-3px);border-color:rgba(240,198,116,.4);box-shadow:var(--shadow-glow)}
+.room-icon{font-size:24px}
+.cabinet-room-content{background:linear-gradient(165deg,rgba(26,40,49,.6),rgba(17,27,32,.7));border:1px solid rgba(255,255,255,.07);border-radius:16px}
+
+/* AI chat bubbles */
+.ai-bubble{border-radius:16px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(160deg,rgba(23,35,43,.9),rgba(15,24,30,.9));box-shadow:var(--shadow-sm)}
+.ai-bubble.user{border-color:rgba(240,198,116,.3);background:linear-gradient(160deg,rgba(45,40,28,.85),rgba(32,28,20,.9))}
+.ai-bubble strong{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.client-concierge{border:1px solid rgba(240,198,116,.18);border-radius:20px;background:linear-gradient(160deg,rgba(29,44,54,.92),rgba(17,27,32,.95));box-shadow:var(--shadow-md)}
+
+/* Status pill & services */
+.status{color:var(--accent)}
+.status:before{box-shadow:0 0 8px currentColor}
+.service{border-bottom-color:rgba(255,255,255,.07)}
+.service-name{font-weight:700}
+.label{color:#8fa0ab}
+
+/* Section entrance animation */
+@keyframes riseIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+section:not(.hidden){animation:riseIn .42s cubic-bezier(.2,.8,.25,1) both}
+.role-card{animation:riseIn .5s cubic-bezier(.2,.8,.25,1) both}
+.role-card:nth-child(2){animation-delay:.07s}
+
+/* Refined scrollbars (dark view) */
+body:not(:has(#adminCabinetPanel:not(.hidden))) *{scrollbar-width:thin;scrollbar-color:rgba(240,198,116,.35) transparent}
+body:not(:has(#adminCabinetPanel:not(.hidden))) *::-webkit-scrollbar{width:9px;height:9px}
+body:not(:has(#adminCabinetPanel:not(.hidden))) *::-webkit-scrollbar-thumb{background:rgba(240,198,116,.3);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+body:not(:has(#adminCabinetPanel:not(.hidden))) *::-webkit-scrollbar-thumb:hover{background:rgba(240,198,116,.5);background-clip:content-box}
+
+/* Footer */
+footer{color:#6f7f89;letter-spacing:.02em}
 </style></head>
 <body><main>
 <header><div class="brand">ARMENIA · SERVICE MARKETPLACE</div><nav class="languages" aria-label="Language"><button data-lang="hy" class="active">Հայ</button><button data-lang="ru">RU</button><button data-lang="en">EN</button></nav></header>
