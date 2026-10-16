@@ -720,7 +720,19 @@ admin:[
 };
 const ROOM_STATUS={hy:"Կմիանա հաջորդ փուլում",ru:"Подключим следующим этапом",en:"Connect in a later stage"};
 function roomLang(v){return v?.[lang]||v?.ru||"";}
-function renderRoomGrid(role){const grid=$("cabinetRooms");grid.replaceChildren();for(const room of CABINET_ROOMS[role]){const b=document.createElement("button");b.type="button";b.className="room-button";b.dataset.room=room[0];const icon=document.createElement("span");icon.className="room-icon";icon.textContent=room[1];const title=document.createElement("strong");title.textContent=roomLang(room[2]);const status=document.createElement("span");status.className="room-status";status.textContent=roomLang(ROOM_STATUS);b.append(icon,title,status);b.addEventListener("click",()=>openCabinetRoom(role,room[0]));grid.append(b);}}
+function renderRoomGrid(role){
+ const grid=$("cabinetRooms");grid.replaceChildren();
+ if(role==="partner"){
+  const items=[
+   {id:"profile",icon:"◉",title:{hy:"Իմ պրոֆիլը",ru:"Мой профиль",en:"My profile"},desc:{hy:"Անձնական տվյալներ՝ հաստատված և պահպանված",ru:"Личные данные и подтверждённый телефон",en:"Saved personal details and verified phone"},run:()=>openOwnerProfile()},
+   {id:"companies",icon:"▣",title:{hy:"Իմ ընկերությունները",ru:"Мои компании",en:"My companies"},desc:{hy:"Հայտեր, ստուգման կարգավիճակ և հաստատված ընկերություններ",ru:"Заявки, статусы проверки и одобренные компании",en:"Applications, review status and approved companies"},run:()=>openCabinetRoom("partner","companies")},
+   {id:"services",icon:"◇",title:{hy:"Իմ ծառայությունները",ru:"Мои услуги",en:"My services"},desc:{hy:"Ծառայություններ՝ խմբավորված ըստ ընկերության",ru:"Услуги, сгруппированные по компаниям",en:"Services grouped under each company"},run:()=>openPartnerServices()}
+  ];
+  for(const item of items){const button=document.createElement("button");button.type="button";button.className="room-button";button.dataset.room=item.id;const icon=document.createElement("span");icon.className="room-icon";icon.textContent=item.icon;const title=document.createElement("strong");title.textContent=item.title[lang]||item.title.ru;const desc=document.createElement("span");desc.className="room-status";desc.textContent=item.desc[lang]||item.desc.ru;button.append(icon,title,desc);button.addEventListener("click",item.run);grid.append(button);}
+  return;
+ }
+ for(const room of CABINET_ROOMS[role]){const b=document.createElement("button");b.type="button";b.className="room-button";b.dataset.room=room[0];const icon=document.createElement("span");icon.className="room-icon";icon.textContent=room[1];const title=document.createElement("strong");title.textContent=roomLang(room[2]);const status=document.createElement("span");status.className="room-status";status.textContent=roomLang(ROOM_STATUS);b.append(icon,title,status);b.addEventListener("click",()=>openCabinetRoom(role,room[0]));grid.append(b);}
+}
 function clearCabinetSubpanels(){["profilePanel","languagePanel","servicePanel","partnerPanel","partnerAIPanel","requestPanel","adminPanel"].forEach(id=>$(id).classList.add("hidden"));$("cabinetRoomContent").classList.add("hidden");}
 function partnerRoomData(id){
  const common={
@@ -1112,7 +1124,7 @@ function renderCabinet(role){
  $("openBusinessButton").classList.toggle("hidden",role!=="partner");$("openServicesButton").classList.toggle("hidden",role!=="partner");
  $("cabinetHeading").textContent=role==="client"?t.clientTitle:t.partnerTitle;$("cabinetIntro").textContent=role==="client"?t.clientIntro:t.partnerIntro;
  $("switchRoleButton").textContent=t.switch;$("openProfileButton").textContent=t.profile;$("openBusinessButton").textContent=t.business;$("openServicesButton").textContent=t.services;
- $("cabinetSummaryTitle").textContent=t.next;$("cabinetSummaryText").textContent=role==="client"?t.clientNext:t.partnerNext;$("cabinetExtra").textContent=role==="partner"?t.extra:"";
+ $("cabinetSummaryTitle").textContent=role==="partner"?({hy:"Ձեր աշխատանքային տարածքը",ru:"Ваш рабочий кабинет",en:"Your workspace"}[lang]):t.next;$("cabinetSummaryText").textContent=role==="client"?t.clientNext:({hy:"AI-ի միջոցով լրացրեք պրոֆիլը, գրանցեք ընկերությունը և ավելացրեք ծառայությունները։ Հաստատված ընկերություններն ու ծառայությունները կհայտնվեն իրենց բաժիններում։",ru:"Заполните профиль, зарегистрируйте компанию и добавляйте услуги через AI. Одобренные компании и услуги появятся в своих разделах.",en:"Complete your profile, register a company and add services through AI. Approved companies and services will appear in their respective sections."}[lang]);$("cabinetExtra").textContent=role==="partner"?"":t.extra;
  $("cabinetPrimaryAction").classList.toggle("hidden",role!=="partner");$("cabinetPrimaryAction").textContent=t.register;$("footer").classList.remove("hidden");renderRoomGrid(role);window.scrollTo({top:0,behavior:"auto"});
 }
 // New partner sessions always start with the owner profile, never with business registration.
